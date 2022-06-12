@@ -4,7 +4,7 @@ use crate::instructions::{ Instruction };
 #[derive(Debug, Clone)]
 pub struct StackElement {
     pub value: MValue,
-    pub instruction: Instruction
+    pub instruction: Instruction // keeps track of the instruction that pushed the value to the stack
 }
 
 pub type Stack = Vec<StackElement>;
@@ -32,4 +32,12 @@ pub fn insert_at(stack: Stack, els_to_insert: Vec<StackElement>, index: usize) -
     stack_start.extend(els_to_insert);
     stack_start.extend(vec_tail);
     return stack_start
+}
+
+/// Helper function to remove an element from the stack at the provided index
+/// Returns the element and the updated stack
+pub fn remove_at(stack: Stack, pos: usize) -> (StackElement, Stack) {
+    let mut new_stack = stack.clone();
+    let stack_el = new_stack.remove(pos);
+    (stack_el, new_stack)
 }

@@ -33,7 +33,9 @@ fn main() {
             },
             Err (err) => panic!("{}", err)
         };
-    println!("New stack: {:?}", run_result.unwrap())
+    let new_stack = run_result.unwrap();
+    println!("\nNew stack: {:#?}", new_stack);
+    println!("Number of elements in the stack: {}", new_stack.len())
     /*let michelson_code = r#"
         ## Checks if amount is equal to zero
         AMOUNT ;

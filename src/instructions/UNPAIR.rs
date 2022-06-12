@@ -1,3 +1,4 @@
+use serde_json::{Value};
 use crate::stack::{ Stack, create_stack_element, insert_at };
 use crate::instructions::{ RunOptions, Instruction };
 use crate::errors::{ ErrorCode, error_code };
@@ -5,22 +6,22 @@ use crate::m_types::{ MValue };
 use crate::utils::{ pair };
 
 /// checks if the stack has the correct properties
-fn check_stack(stack: &Stack) -> Result<(), String> {
+fn check_stack(stack: &Stack, pos: usize) -> Result<(), String> {
     // stack must have at least one element
     if stack.len() < 1 {
         return Err(error_code(ErrorCode::StackNotDeepEnough((1, stack.len()))))
     }
-    // the element at the top of the stack must be a pair
-    match stack[0].value {
+    // the element at pos index must be a pair
+    match stack[pos].value {
         MValue::Pair (_) => Ok(()),
         _ => Err(error_code(ErrorCode::WrongType((String::from("pair"), MValue::to_string(&stack[0].value)))))
     }
 }
 
-// runs the instruction with the provided stacka nd options
-pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
+/// runs the instruction with the provided stack and options
+pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Result<Stack, String> {
     // checks the stack
-    match check_stack(&stack) {
+    match check_stack(&stack, options.pos) {
         Ok (_) => (),
         Err (err) => panic!("{}", err)
     };

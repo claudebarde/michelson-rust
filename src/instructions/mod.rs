@@ -1,4 +1,5 @@
 use regex::Regex;
+use serde_json::{Value};
 use crate::stack::{ Stack };
 use crate::m_types::{ mutez, address };
 mod ADD;
@@ -56,18 +57,18 @@ impl Instruction {
     }
 
     /// Runs the provided instruction against the provided stack, returns the new stack
-    pub fn run(instruction: Instruction, initial_stack: Stack, options: &RunOptions) -> Stack {
+    pub fn run(instruction: Instruction, args: Option<&Vec<Value>>, initial_stack: Stack, options: &RunOptions) -> Stack {
         let new_stack = 
             match instruction {
                 Instruction::ADD => ADD::run(initial_stack, options),
-                Instruction::DROP => DROP::run(initial_stack, options),
-                Instruction::IF_LEFT => IF_LEFT::run(initial_stack, options),
-                Instruction::NIL => NIL::run(initial_stack, options),
+                Instruction::DROP => DROP::run(initial_stack, args, options),
+                Instruction::IF_LEFT => IF_LEFT::run(initial_stack, args, options),
+                Instruction::NIL => NIL::run(initial_stack, args, options),
                 Instruction::PAIR => PAIR::run(initial_stack, options),
-                Instruction::PUSH => PUSH::run(initial_stack, options),
+                Instruction::PUSH => PUSH::run(initial_stack, args, options),
                 Instruction::SUB => SUB::run(initial_stack, options),
                 Instruction::SWAP => SWAP::run(initial_stack, options),
-                Instruction::UNPAIR => UNPAIR::run(initial_stack, options),
+                Instruction::UNPAIR => UNPAIR::run(initial_stack, args, options),
                 _ => panic!("Invalid instruction {:?}", instruction)
             };
         match new_stack {

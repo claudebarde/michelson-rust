@@ -291,6 +291,7 @@ pub fn run(json: &str, param: MValue, storage: MValue) -> Result<Stack, String> 
             Err (err) => panic!("{:?}", err)
         };
     if json_array.is_array() {
+        println!("{:#?}", json_array);
         for val in json_array.as_array().unwrap() {
             let prim = &val["prim"].to_string();
             let instruction = 
@@ -299,7 +300,8 @@ pub fn run(json: &str, param: MValue, storage: MValue) -> Result<Stack, String> 
                     Err (err) => panic!("{}", err)
                 };
             println!("{:?}", instruction);
-            stack = Instruction::run(instruction, stack, &options);
+            let args = val["args"].as_array();
+            stack = Instruction::run(instruction, args, stack, &options);
         }
 
         Ok(stack)
