@@ -9,6 +9,12 @@ pub struct StackElement {
 
 pub type Stack = Vec<StackElement>;
 
+impl StackElement {
+    pub fn get_val(&self) -> MValue {
+        self.value.clone()
+    }
+}
+
 /// Helper function to create a new stack element
 pub fn create_stack_element(value: MValue, instruction: Instruction) -> StackElement {
     StackElement {

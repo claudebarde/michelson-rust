@@ -1,8 +1,9 @@
 use serde_json::{Value};
-use crate::stack::{ Stack, remove_at };
-use crate::instructions::{ RunOptions };
+use crate::stack::{ Stack, remove_at, create_stack_element };
+use crate::instructions::{ RunOptions, Instruction };
 use crate::errors::{ ErrorCode, error_code };
 use crate::m_types::{ MValue, Or };
+use crate::parser;
 
 /// checks if the stack has the correct properties
 fn check_stack(stack: &Stack, pos: usize) -> Result<(), String> {
@@ -26,7 +27,7 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
         None => panic!("No argument provided for IF_LEFT instruction"),
         Some (args_) => 
             if args_.len() != 2 {
-                panic!("{}", Err(error_code(ErrorCode::UnexpectedArgsNumber((2, args_.len())))))
+                panic!("{:?}", error_code(ErrorCode::UnexpectedArgsNumber((2, args_.len()))))
             } else {
                 args_
             }
@@ -36,16 +37,22 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
     // processes the stack element value
     match or_element.value {
         MValue::Or (box_) => {
-            match *box_ {
-                Or::Left (left_val)     => {
-                    let left_args = args[0];
-                },
-                Or::Right (right_val)   => {
-                    let right_args = args[1];
-                }
-            };
-
-            Ok(vec!())
+            // gets the corresponding arguments and m_value
+            let (new_args, m_val): (String, MValue) =
+                match *box_ {
+                    Or::Left (left_val)     => {
+                        (args[0].to_string(), left_val)
+                    },
+                    Or::Right (right_val)   => {
+                        (args[1].to_string(), right_val)
+                    }
+                };
+            // Pushes unwrapped value to the stack
+            let mut stack_head = vec!(create_stack_element(m_val, Instruction::IF_LEFT));
+            let mut stack_tail = stack.clone();
+            stack_head.append(&mut stack_tail);
+            // runs the code inside the argument
+            parser::run(new_args.as_str(), stack_head)
         },
         _ => Err(error_code(ErrorCode::WrongType((String::from("or"), MValue::to_string(&stack[options.pos].value)))))
     }

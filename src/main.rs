@@ -6,8 +6,9 @@ mod m_types;
 mod instructions;
 mod errors;
 mod utils;
-use stack::{ Stack };
+use stack::{ Stack, create_stack_element };
 use m_types::{ MValue, Or };
+use instructions::{ Instruction};
 
 fn main() {
     let michelson_code = r#"
@@ -29,7 +30,14 @@ fn main() {
             Ok (json) => {
                 let param = MValue::Or(Box::new(Or::Left(MValue::Or(Box::new(Or::Right(MValue::Int(6)))))));
                 let storage = MValue::Int(5);
-                parser::run(&json, param , storage)
+                // creates the initial stack
+                let mut stack: Stack = vec!(
+                    create_stack_element(
+                        MValue::Pair(Box::new((param, storage))), 
+                        Instruction::INIT
+                    )
+                );
+                parser::run(&json, stack)
             },
             Err (err) => panic!("{}", err)
         };

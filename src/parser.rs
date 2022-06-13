@@ -267,14 +267,7 @@ pub fn to_json(ast: &Vec<ParsedCode>) -> Result<String, String> {
 }
 
 /// runs JSON Michelson code provided a parameter value and a storage
-pub fn run(json: &str, param: MValue, storage: MValue) -> Result<Stack, String> {
-    // creates the initial stack
-    let mut stack: Stack = vec!(
-        create_stack_element(
-            MValue::Pair(Box::new((param, storage))), 
-            Instruction::INIT
-        )
-    );
+pub fn run(json: &str, mut stack: Stack) -> Result<Stack, String> {    
     // sets default options
     let options = RunOptions {
         context: RunOptionsContext {
@@ -291,7 +284,7 @@ pub fn run(json: &str, param: MValue, storage: MValue) -> Result<Stack, String> 
             Err (err) => panic!("{:?}", err)
         };
     if json_array.is_array() {
-        println!("{:#?}", json_array);
+        //println!("{:#?}", json_array);
         for val in json_array.as_array().unwrap() {
             let prim = &val["prim"].to_string();
             let instruction = 
