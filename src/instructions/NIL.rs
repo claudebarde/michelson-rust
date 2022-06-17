@@ -1,5 +1,5 @@
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{list, MType, MValue};
+use crate::m_types::{CollectionValue, MType, MValue};
 use crate::stack::{create_stack_element, Stack, StackElement};
 use serde_json::Value;
 
@@ -14,7 +14,10 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
                     Some(str) => {
                         let list_type = MType::from_string(str);
                         create_stack_element(
-                            MValue::List((list_type, Box::new(vec![]))),
+                            MValue::List(CollectionValue {
+                                m_type: list_type,
+                                value: Box::new(vec![]),
+                            }),
                             Instruction::NIL,
                         )
                     }

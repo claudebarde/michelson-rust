@@ -5,7 +5,7 @@ use crate::stack::{create_stack_element, remove_at, Stack};
 use crate::utils::pair;
 
 /// checks if the stack has the correct properties
-fn check_stack(stack: &Stack, pos: usize) -> Result<(), String> {
+fn check_stack(stack: &Stack) -> Result<(), String> {
     // stack must have at least 2 elements
     if stack.len() < 2 {
         return Err(error_code(ErrorCode::StackNotDeepEnough((2, stack.len()))));
@@ -16,7 +16,7 @@ fn check_stack(stack: &Stack, pos: usize) -> Result<(), String> {
 
 pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
     // checks the stack
-    match check_stack(&stack, options.pos) {
+    match check_stack(&stack) {
         Ok(_) => (),
         Err(err) => panic!("{}", err),
     };

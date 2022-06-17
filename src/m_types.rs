@@ -80,6 +80,30 @@ impl MType {
 }
 
 #[derive(Debug, Clone)]
+pub struct OptionValue {
+    pub m_type: MType,
+    pub value: Box<MValue>,
+}
+
+#[derive(Debug, Clone)]
+pub struct OrValue {
+    pub m_type: (MType, MType),
+    pub value: Box<Or>,
+}
+
+#[derive(Debug, Clone)]
+pub struct PairValue {
+    pub m_type: (MType, MType),
+    pub value: Box<(MValue, MValue)>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CollectionValue {
+    pub m_type: MType,
+    pub value: Box<Vec<MValue>>,
+}
+
+#[derive(Debug, Clone)]
 pub enum MValue {
     Unit,
     Never,
@@ -96,11 +120,11 @@ pub enum MValue {
     Timestamp(timestamp),
     Address(address),
     Operation(operation),
-    Option((MType, Box<MValue>)),
-    Or(((MType, MType), Box<Or>)),
-    Pair(((MType, MType), Box<(MValue, MValue)>)),
-    List((MType, Box<Vec<MValue>>)),
-    Set((MType, Box<Vec<MValue>>)),
+    Option(OptionValue),
+    Or(OrValue),
+    Pair(PairValue),
+    List(CollectionValue),
+    Set(CollectionValue),
 }
 
 impl MValue {
@@ -146,11 +170,11 @@ impl MValue {
             MValue::Timestamp(_) => MType::Timestamp,
             MValue::Address(_) => MType::Address,
             MValue::Operation(_) => MType::Operation,
-            MValue::Option((type_, _)) => MType::Option(Box::new(type_.clone())),
-            MValue::Or((type_, _)) => MType::Or(Box::new(type_.clone())),
-            MValue::Pair((type_, _)) => MType::Pair(Box::new(type_.clone())),
-            MValue::List((type_, _)) => MType::List(Box::new(type_.clone())),
-            MValue::Set((type_, _)) => MType::Set(Box::new(type_.clone())),
+            MValue::Option(val) => MType::Option(Box::new(val.m_type.clone())),
+            MValue::Or(val) => MType::Or(Box::new(val.m_type.clone())),
+            MValue::Pair(val) => MType::Pair(Box::new(val.m_type.clone())),
+            MValue::List(val) => MType::List(Box::new(val.m_type.clone())),
+            MValue::Set(val) => MType::Set(Box::new(val.m_type.clone())),
         }
     }
 

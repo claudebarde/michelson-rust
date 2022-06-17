@@ -7,7 +7,7 @@ mod parser;
 mod stack;
 mod utils;
 use instructions::Instruction;
-use m_types::{or, MType, MValue, Or};
+use m_types::{or, MType, MValue, Or, OrValue, PairValue};
 use stack::{create_stack_element, Stack};
 
 fn main() {
@@ -29,21 +29,22 @@ fn main() {
             // (or (or (int %decrement) (int %increment)) (unit %reset))
             let param_type: or<MType, MType> =
                 (MType::Or(Box::new((MType::Int, MType::Int))), MType::Unit);
-            let param = MValue::Or((
-                param_type.clone(),
-                Box::new(Or::Left(MValue::Or((
-                    (MType::Int, MType::Int),
-                    Box::new(Or::Right(MValue::Int(6))),
-                )))),
-            ));
+            let param = MValue::Or(OrValue {
+                m_type: param_type.clone(),
+                value: Box::new(Or::Left(MValue::Or(OrValue {
+                    m_type: (MType::Int, MType::Int),
+                    value: Box::new(Or::Right(MValue::Int(6))),
+                }))),
+            });
             let storage = MValue::Int(5);
             let storage_type = MType::Int;
+            println!("\nInput: param = {:?} / storage = {:?}\n", param, storage);
             // creates the initial stack
             let stack: Stack = vec![create_stack_element(
-                MValue::Pair((
-                    (MType::Or(Box::new(param_type)), storage_type),
-                    Box::new((param, storage)),
-                )),
+                MValue::Pair(PairValue {
+                    m_type: (MType::Or(Box::new(param_type)), storage_type),
+                    value: Box::new((param, storage)),
+                }),
                 Instruction::INIT,
             )];
             parser::run(&json, stack)

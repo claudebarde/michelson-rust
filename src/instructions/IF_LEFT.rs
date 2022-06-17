@@ -41,7 +41,7 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
     match or_element.value {
         MValue::Or(box_) => {
             // gets the corresponding arguments and m_value
-            let (new_args, m_val): (String, MValue) = match *box_.1 {
+            let (new_args, m_val): (String, MValue) = match *box_.value {
                 Or::Left(left_val) => (args[0].to_string(), left_val),
                 Or::Right(right_val) => (args[1].to_string(), right_val),
             };
