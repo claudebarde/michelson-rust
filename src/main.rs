@@ -1,14 +1,14 @@
 #![allow(non_snake_case)]
 
+mod errors;
+mod instructions;
+mod m_types;
 mod parser;
 mod stack;
-mod m_types;
-mod instructions;
-mod errors;
 mod utils;
-use stack::{ Stack, create_stack_element };
-use m_types::{ MValue, Or };
-use instructions::{ Instruction};
+use instructions::Instruction;
+use m_types::{or, MType, MValue, Or};
+use stack::{create_stack_element, Stack};
 
 fn main() {
     let michelson_code = r#"
@@ -19,28 +19,37 @@ fn main() {
     "#;
     let parsed_michelson = parser::parse(String::from(michelson_code));
     // println!("{:#?}", parsed_michelson);
-    let parsed_json = 
-        match parsed_michelson {
-            Ok (mich) => parser::to_json(&mich),
-            Err ((err, _)) => panic!("{}", err)
-        };
+    let parsed_json = match parsed_michelson {
+        Ok(mich) => parser::to_json(&mich),
+        Err((err, _)) => panic!("{}", err),
+    };
     // println!("{:?}", parsed_json.clone().unwrap());
-    let run_result: Result<Stack, String> =
-        match parsed_json {
-            Ok (json) => {
-                let param = MValue::Or(Box::new(Or::Left(MValue::Or(Box::new(Or::Right(MValue::Int(6)))))));
-                let storage = MValue::Int(5);
-                // creates the initial stack
-                let mut stack: Stack = vec!(
-                    create_stack_element(
-                        MValue::Pair(Box::new((param, storage))), 
-                        Instruction::INIT
-                    )
-                );
-                parser::run(&json, stack)
-            },
-            Err (err) => panic!("{}", err)
-        };
+    let run_result: Result<Stack, String> = match parsed_json {
+        Ok(json) => {
+            // (or (or (int %decrement) (int %increment)) (unit %reset))
+            let param_type: or<MType, MType> =
+                (MType::Or(Box::new((MType::Int, MType::Int))), MType::Unit);
+            let param = MValue::Or((
+                param_type.clone(),
+                Box::new(Or::Left(MValue::Or((
+                    (MType::Int, MType::Int),
+                    Box::new(Or::Right(MValue::Int(6))),
+                )))),
+            ));
+            let storage = MValue::Int(5);
+            let storage_type = MType::Int;
+            // creates the initial stack
+            let stack: Stack = vec![create_stack_element(
+                MValue::Pair((
+                    (MType::Or(Box::new(param_type)), storage_type),
+                    Box::new((param, storage)),
+                )),
+                Instruction::INIT,
+            )];
+            parser::run(&json, stack)
+        }
+        Err(err) => panic!("{}", err),
+    };
     let new_stack = run_result.unwrap();
     println!("\nNew stack: {:#?}", new_stack);
     println!("Number of elements in the stack: {}", new_stack.len())

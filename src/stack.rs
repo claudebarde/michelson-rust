@@ -17,6 +17,7 @@ impl StackElement {
 
 /// Helper function to create a new stack element
 pub fn create_stack_element(value: MValue, instruction: Instruction) -> StackElement {
+    // TODO: create a function to validate the Michelson type
     StackElement {
         value,
         instruction
