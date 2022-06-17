@@ -96,11 +96,11 @@ pub enum MValue {
     Timestamp(timestamp),
     Address(address),
     Operation(operation),
-    Option((option<MType>, Box<MValue>)),
-    Or((or<MType, MType>, Box<Or>)),
-    Pair((pair<MType, MType>, Box<(MValue, MValue)>)),
+    Option((MType, Box<MValue>)),
+    Or(((MType, MType), Box<Or>)),
+    Pair(((MType, MType), Box<(MValue, MValue)>)),
     List((MType, Box<Vec<MValue>>)),
-    Set((set<MType>, Box<Vec<MValue>>)),
+    Set((MType, Box<Vec<MValue>>)),
 }
 
 impl MValue {
@@ -126,6 +126,31 @@ impl MValue {
             MValue::Pair(_) => String::from("pair"),
             MValue::List(_) => String::from("list"),
             MValue::Set(_) => String::from("set"),
+        }
+    }
+
+    pub fn get_type(&self) -> MType {
+        match self {
+            MValue::Unit => MType::Unit,
+            MValue::Never => MType::Never,
+            MValue::Bool(_) => MType::Bool,
+            MValue::Int(_) => MType::Int,
+            MValue::Nat(_) => MType::Nat,
+            MValue::String(_) => MType::String,
+            MValue::ChainId(_) => MType::ChainId,
+            MValue::Bytes(_) => MType::Bytes,
+            MValue::Mutez(_) => MType::Mutez,
+            MValue::KeyHash(_) => MType::KeyHash,
+            MValue::Key(_) => MType::Key,
+            MValue::Signature(_) => MType::Signature,
+            MValue::Timestamp(_) => MType::Timestamp,
+            MValue::Address(_) => MType::Address,
+            MValue::Operation(_) => MType::Operation,
+            MValue::Option((type_, _)) => MType::Option(Box::new(type_.clone())),
+            MValue::Or((type_, _)) => MType::Or(Box::new(type_.clone())),
+            MValue::Pair((type_, _)) => MType::Pair(Box::new(type_.clone())),
+            MValue::List((type_, _)) => MType::List(Box::new(type_.clone())),
+            MValue::Set((type_, _)) => MType::Set(Box::new(type_.clone())),
         }
     }
 
