@@ -28,8 +28,9 @@ fn main() {
         Ok(json) => {
             // (or (or (int %decrement) (int %increment)) (unit %reset))
             // addition params
-            /*let param_type: or<MType, MType> =
+            let param_type: or<MType, MType> =
                 (MType::Or(Box::new((MType::Int, MType::Int))), MType::Unit);
+            /*
             let param = MValue::Or(OrValue {
                 m_type: param_type.clone(),
                 value: Box::new(Or::Left(MValue::Or(OrValue {
@@ -38,14 +39,17 @@ fn main() {
                 }))),
             });*/
             // subtraction params
-            let param_type: or<MType, MType> =
-                (MType::Or(Box::new((MType::Int, MType::Int))), MType::Unit);
-            let param = MValue::Or(OrValue {
+            /*let param = MValue::Or(OrValue {
                 m_type: param_type.clone(),
                 value: Box::new(Or::Left(MValue::Or(OrValue {
                     m_type: (MType::Int, MType::Int),
                     value: Box::new(Or::Left(MValue::Int(6))),
                 }))),
+            });*/
+            // reset params
+            let param = MValue::Or(OrValue {
+                m_type: param_type.clone(),
+                value: Box::new(Or::Right(MValue::Unit)),
             });
             let storage = MValue::Int(5);
             let storage_type = MType::Int;
