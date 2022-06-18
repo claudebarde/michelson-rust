@@ -2,22 +2,13 @@ use crate::errors::{error_code, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{MType, MValue, Or};
 use crate::parser;
-use crate::stack::{create_stack_element, remove_at, Stack};
+use crate::stack::{create_stack_element, Stack, StackFuncs};
 use serde_json::Value;
-
-/// checks if the stack has the correct properties
-fn check_stack(stack: &Stack, pos: usize) -> Result<(), String> {
-    // stack must have at least one element
-    if stack.len() < 1 {
-        return Err(error_code(ErrorCode::StackNotDeepEnough((1, stack.len()))));
-    }
-    Ok(())
-}
 
 /// runs the instruction with the provided stack and options
 pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Result<Stack, String> {
     // checks the stack
-    match check_stack(&stack, options.pos) {
+    match stack.check_depth(1) {
         Ok(_) => (),
         Err(err) => panic!("{}", err),
     };
@@ -36,7 +27,7 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
         }
     };
     // unwraps the value
-    let (or_element, stack) = remove_at(stack, options.pos);
+    let (or_element, stack) = stack.remove_at(options.pos);
     // processes the stack element value
     match or_element.value {
         MValue::Or(box_) => {

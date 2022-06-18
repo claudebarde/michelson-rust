@@ -27,13 +27,24 @@ fn main() {
     let run_result: Result<Stack, String> = match parsed_json {
         Ok(json) => {
             // (or (or (int %decrement) (int %increment)) (unit %reset))
-            let param_type: or<MType, MType> =
+            // addition params
+            /*let param_type: or<MType, MType> =
                 (MType::Or(Box::new((MType::Int, MType::Int))), MType::Unit);
             let param = MValue::Or(OrValue {
                 m_type: param_type.clone(),
                 value: Box::new(Or::Left(MValue::Or(OrValue {
                     m_type: (MType::Int, MType::Int),
                     value: Box::new(Or::Right(MValue::Int(6))),
+                }))),
+            });*/
+            // subtraction params
+            let param_type: or<MType, MType> =
+                (MType::Or(Box::new((MType::Int, MType::Int))), MType::Unit);
+            let param = MValue::Or(OrValue {
+                m_type: param_type.clone(),
+                value: Box::new(Or::Left(MValue::Or(OrValue {
+                    m_type: (MType::Int, MType::Int),
+                    value: Box::new(Or::Left(MValue::Int(6))),
                 }))),
             });
             let storage = MValue::Int(5);

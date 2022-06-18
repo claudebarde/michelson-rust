@@ -1,22 +1,11 @@
-use crate::errors::{error_code, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::MValue;
-use crate::stack::{create_stack_element, remove_at, Stack};
+use crate::stack::{create_stack_element, Stack, StackFuncs};
 use crate::utils::pair;
-
-/// checks if the stack has the correct properties
-fn check_stack(stack: &Stack) -> Result<(), String> {
-    // stack must have at least 2 elements
-    if stack.len() < 2 {
-        return Err(error_code(ErrorCode::StackNotDeepEnough((2, stack.len()))));
-    }
-
-    Ok(())
-}
 
 pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
     // checks the stack
-    match check_stack(&stack) {
+    match stack.check_depth(2) {
         Ok(_) => (),
         Err(err) => panic!("{}", err),
     };
@@ -27,8 +16,8 @@ pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
         stack[options.pos + 1].value.clone(),
     );
     // drops the 2 elements from the stack
-    let (_, new_stack) = remove_at(stack, options.pos);
-    let (_, new_stack) = remove_at(new_stack, options.pos);
+    let (_, new_stack) = stack.remove_at(options.pos);
+    let (_, new_stack) = new_stack.remove_at(options.pos);
     // pushes the new pair to the stack
     let mut stack_with_pair: Stack = vec![create_stack_element(new_pair, Instruction::PAIR)];
     let mut old_stack = new_stack.clone();
