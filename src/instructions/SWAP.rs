@@ -1,12 +1,16 @@
-use crate::errors::{error_code, ErrorCode};
-use crate::instructions::RunOptions;
+use crate::errors::{display_error, ErrorCode};
+use crate::instructions::{Instruction, RunOptions};
 use crate::stack::Stack;
 
 /// checks if the stack has the correct properties
 fn check_stack(stack: &Stack) -> Result<(), String> {
     // stack must have at least 2 elements
     if stack.len() < 2 {
-        return Err(error_code(ErrorCode::StackNotDeepEnough((2, stack.len()))));
+        return Err(display_error(ErrorCode::StackNotDeepEnough((
+            2,
+            stack.len(),
+            Instruction::SWAP,
+        ))));
     }
 
     Ok(())

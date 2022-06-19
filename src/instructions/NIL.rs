@@ -12,7 +12,10 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
                 let new_list: StackElement = match val[0]["prim"].as_str() {
                     None => panic!("Expected string for the list element type"),
                     Some(str) => {
-                        let list_type = MType::from_string(str);
+                        let list_type = match MType::from_string(str) {
+                            Err(err) => panic!("{}", err),
+                            Ok(type_) => type_,
+                        };
                         create_stack_element(
                             MValue::List(CollectionValue {
                                 m_type: list_type,

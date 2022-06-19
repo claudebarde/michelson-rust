@@ -57,24 +57,24 @@ pub enum MType {
 }
 
 impl MType {
-    pub fn from_string(str: &str) -> MType {
+    pub fn from_string(str: &str) -> Result<MType, String> {
         match str {
-            "unit" => MType::Unit,
-            "never" => MType::Never,
-            "bool" => MType::Bool,
-            "int" => MType::Int,
-            "nat" => MType::Nat,
-            "string" => MType::String,
-            "chain_id" => MType::ChainId,
-            "bytes" => MType::Bytes,
-            "mutez" => MType::Mutez,
-            "key_hash" => MType::KeyHash,
-            "key" => MType::Key,
-            "signature" => MType::Signature,
-            "timestamp" => MType::Timestamp,
-            "address" => MType::Address,
-            "operation" => MType::Operation,
-            _ => panic!("Cannot cast string to complex type yet"),
+            "unit" => Ok(MType::Unit),
+            "never" => Ok(MType::Never),
+            "bool" => Ok(MType::Bool),
+            "int" => Ok(MType::Int),
+            "nat" => Ok(MType::Nat),
+            "string" => Ok(MType::String),
+            "chain_id" => Ok(MType::ChainId),
+            "bytes" => Ok(MType::Bytes),
+            "mutez" => Ok(MType::Mutez),
+            "key_hash" => Ok(MType::KeyHash),
+            "key" => Ok(MType::Key),
+            "signature" => Ok(MType::Signature),
+            "timestamp" => Ok(MType::Timestamp),
+            "address" => Ok(MType::Address),
+            "operation" => Ok(MType::Operation),
+            _ => Err(String::from("Cannot cast string to complex type yet")),
         }
     }
 }

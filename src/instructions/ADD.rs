@@ -1,11 +1,11 @@
-use crate::errors::{error_code, ErrorCode};
+use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{int, timestamp, MType, MValue};
 use crate::stack::{create_stack_element, Stack, StackFuncs};
 
 pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
     // checks the stack
-    match stack.check_depth(2) {
+    match stack.check_depth(2, Instruction::ADD) {
         Ok(_) => (),
         Err(err) => panic!("{}", err),
     };
@@ -19,21 +19,21 @@ pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
             if MValue::Nat(right).check_nat() {
                 MValue::Int(left + right as int)
             } else {
-                panic!("{}", error_code(ErrorCode::InvalidNat(right)))
+                panic!("{}", display_error(ErrorCode::InvalidNat(right)))
             }
         } // int
         (MValue::Nat(left), MValue::Int(right)) => {
             if MValue::Nat(left).check_nat() {
                 MValue::Int(left as int + right)
             } else {
-                panic!("{}", error_code(ErrorCode::InvalidNat(left)))
+                panic!("{}", display_error(ErrorCode::InvalidNat(left)))
             }
         } // int
         (MValue::Nat(left), MValue::Nat(right)) => {
             if MValue::Nat(left).check_nat() == false {
-                panic!("{}", error_code(ErrorCode::InvalidNat(left)))
+                panic!("{}", display_error(ErrorCode::InvalidNat(left)))
             } else if MValue::Nat(right).check_nat() == false {
-                panic!("{}", error_code(ErrorCode::InvalidNat(right)))
+                panic!("{}", display_error(ErrorCode::InvalidNat(right)))
             } else {
                 MValue::Nat(left + right)
             }
@@ -46,9 +46,9 @@ pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
         } // timestamp
         (MValue::Mutez(left), MValue::Mutez(right)) => {
             if MValue::Mutez(left).check_mutez() == false {
-                panic!("{}", error_code(ErrorCode::InvalidMutez(left)))
+                panic!("{}", display_error(ErrorCode::InvalidMutez(left)))
             } else if MValue::Mutez(right).check_mutez() == false {
-                panic!("{}", error_code(ErrorCode::InvalidMutez(right)))
+                panic!("{}", display_error(ErrorCode::InvalidMutez(right)))
             } else {
                 MValue::Mutez(left + right)
             }

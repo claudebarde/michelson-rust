@@ -4,7 +4,7 @@ use crate::stack::{create_stack_element, Stack, StackFuncs};
 
 pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
     // checks the stack
-    match stack.check_depth(2) {
+    match stack.check_depth(2, Instruction::SUB) {
         Ok(_) => (),
         Err(err) => panic!("{}", err),
     };

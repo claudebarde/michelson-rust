@@ -5,7 +5,7 @@ use crate::utils::pair;
 
 pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
     // checks the stack
-    match stack.check_depth(2) {
+    match stack.check_depth(2, Instruction::PAIR) {
         Ok(_) => (),
         Err(err) => panic!("{}", err),
     };

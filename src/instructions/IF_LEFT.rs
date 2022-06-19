@@ -1,4 +1,4 @@
-use crate::errors::{error_code, ErrorCode};
+use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{MType, MValue, Or};
 use crate::parser;
@@ -8,7 +8,7 @@ use serde_json::Value;
 /// runs the instruction with the provided stack and options
 pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Result<Stack, String> {
     // checks the stack
-    match stack.check_depth(1) {
+    match stack.check_depth(1, Instruction::IF_LEFT) {
         Ok(_) => (),
         Err(err) => panic!("{}", err),
     };
@@ -19,7 +19,7 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
             if args_.len() != 2 {
                 panic!(
                     "{:?}",
-                    error_code(ErrorCode::UnexpectedArgsNumber((2, args_.len())))
+                    display_error(ErrorCode::UnexpectedArgsNumber((2, args_.len())))
                 )
             } else {
                 args_
@@ -43,7 +43,7 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
             // runs the code inside the argument
             parser::run(new_args.as_str(), stack_head)
         }
-        _ => Err(error_code(ErrorCode::WrongType((
+        _ => Err(display_error(ErrorCode::WrongType((
             String::from("or"),
             MValue::to_string(&stack[options.pos].value),
         )))),

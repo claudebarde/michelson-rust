@@ -1,4 +1,4 @@
-use crate::errors::{error_code, ErrorCode};
+use crate::errors::{display_error, ErrorCode};
 use crate::instructions::Instruction;
 use crate::m_types::MValue;
 
@@ -24,7 +24,7 @@ pub trait StackFuncs {
     /// Returns the element and the updated stack
     fn remove_at(&self, pos: usize) -> (StackElement, Stack);
     /// Helper function to check if the stack has the correct properties
-    fn check_depth(&self, expected_size: usize) -> Result<(), String>;
+    fn check_depth(&self, expected_size: usize, instruction: Instruction) -> Result<(), String>;
 }
 
 impl StackFuncs for Stack {
@@ -52,11 +52,12 @@ impl StackFuncs for Stack {
         (stack_el, new_stack)
     }
     /// Helper function to check if the stack has the correct properties
-    fn check_depth(&self, expected_size: usize) -> Result<(), String> {
+    fn check_depth(&self, expected_size: usize, instruction: Instruction) -> Result<(), String> {
         if self.len() < expected_size {
-            return Err(error_code(ErrorCode::StackNotDeepEnough((
+            return Err(display_error(ErrorCode::StackNotDeepEnough((
                 expected_size,
                 self.len(),
+                instruction,
             ))));
         }
         Ok(())

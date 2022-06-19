@@ -1,11 +1,12 @@
-use crate::errors::{error_code, ErrorCode};
+use crate::errors::{display_error, ErrorCode};
+use crate::instructions::Instruction;
 use crate::instructions::RunOptions;
 use crate::stack::{Stack, StackFuncs};
 use serde_json::Value;
 
 pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Result<Stack, String> {
     // checks the stack
-    match stack.check_depth(1) {
+    match stack.check_depth(1, Instruction::DROP) {
         Ok(_) => (),
         Err(err) => panic!("{}", err),
     };
@@ -44,14 +45,19 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
             } else {
                 panic!(
                     "{:?}",
-                    error_code(ErrorCode::UnexpectedArgsNumber((1, arg.len())))
+                    display_error(ErrorCode::UnexpectedArgsNumber((1, arg.len())))
                 )
             }
         }
     };
 
     // drops the element at position - 1
-    let (_, new_stack) = stack.remove_at(el_to_drop_pos - 1);
+    let new_stack = stack
+        .into_iter()
+        .enumerate()
+        .filter(|&(i, _)| i > el_to_drop_pos - 1)
+        .map(|(_, e)| e)
+        .collect();
     // returns the new stack
     Ok(new_stack)
 }

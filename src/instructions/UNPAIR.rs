@@ -1,4 +1,4 @@
-use crate::errors::{error_code, ErrorCode};
+use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::MValue;
 use crate::stack::{create_stack_element, Stack, StackFuncs};
@@ -9,12 +9,16 @@ use serde_json::Value;
 fn check_stack(stack: &Stack, pos: usize) -> Result<(), String> {
     // stack must have at least one element
     if stack.len() < 1 {
-        return Err(error_code(ErrorCode::StackNotDeepEnough((1, stack.len()))));
+        return Err(display_error(ErrorCode::StackNotDeepEnough((
+            1,
+            stack.len(),
+            Instruction::UNPAIR,
+        ))));
     }
     // the element at pos index must be a pair
     match stack[pos].value {
         MValue::Pair(_) => Ok(()),
-        _ => Err(error_code(ErrorCode::WrongType((
+        _ => Err(display_error(ErrorCode::WrongType((
             String::from("pair"),
             MValue::to_string(&stack[0].value),
         )))),
