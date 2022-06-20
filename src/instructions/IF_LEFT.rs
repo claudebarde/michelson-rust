@@ -1,12 +1,17 @@
 use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{MType, MValue, Or};
+use crate::m_types::{MValue, Or};
 use crate::parser;
-use crate::stack::{create_stack_element, Stack, StackFuncs};
+use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use serde_json::Value;
 
 /// runs the instruction with the provided stack and options
-pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Result<Stack, String> {
+pub fn run(
+    stack: Stack,
+    args: Option<&Vec<Value>>,
+    options: &RunOptions,
+    mut stack_snapshots: StackSnapshots,
+) -> Result<(Stack, StackSnapshots), String> {
     // checks the stack
     match stack.check_depth(1, Instruction::IF_LEFT) {
         Ok(_) => (),
@@ -37,11 +42,13 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
                 Or::Right(right_val) => (args[1].to_string(), right_val),
             };
             // Pushes unwrapped value to the stack
-            let mut stack_head = vec![create_stack_element(m_val, Instruction::IF_LEFT)];
+            let mut stack_head = vec![StackElement::new(m_val, Instruction::IF_LEFT)];
             let mut stack_tail = stack.clone();
             stack_head.append(&mut stack_tail);
+            // updates the stack snapshots
+            stack_snapshots.push(stack_head.clone());
             // runs the code inside the argument
-            parser::run(new_args.as_str(), stack_head)
+            parser::run(new_args.as_str(), stack_head, stack_snapshots)
         }
         _ => Err(display_error(ErrorCode::WrongType((
             String::from("or"),

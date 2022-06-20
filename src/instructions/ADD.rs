@@ -1,9 +1,13 @@
 use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{int, timestamp, MType, MValue};
-use crate::stack::{create_stack_element, Stack, StackFuncs};
+use crate::m_types::{int, timestamp, MValue};
+use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 
-pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
+pub fn run(
+    stack: Stack,
+    options: &RunOptions,
+    mut stack_snapshots: StackSnapshots,
+) -> Result<(Stack, StackSnapshots), String> {
     // checks the stack
     match stack.check_depth(2, Instruction::ADD) {
         Ok(_) => (),
@@ -63,9 +67,95 @@ pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
     let (_, new_stack) = stack.remove_at(options.pos);
     let (_, new_stack) = new_stack.remove_at(options.pos);
     // pushes the new value to the top of the stack
-    let mut stack_head = vec![create_stack_element(new_val, Instruction::ADD)];
+    let mut stack_head = vec![StackElement::new(new_val, Instruction::ADD)];
     let mut stack_tail = new_stack;
     stack_head.append(&mut stack_tail);
+    // updates the stack snapshots
+    stack_snapshots.push(stack_head.clone());
     // returns the stack
-    Ok(stack_head)
+    Ok((stack_head, stack_snapshots))
+}
+
+/*
+    TESTS
+*/
+
+#[cfg(test)]
+mod tests {
+    use crate::instructions::{Instruction, RunOptions, RunOptionsContext};
+    use crate::m_types::MValue;
+    use crate::stack::{Stack, StackElement, StackSnapshots};
+    use serde_json::Value;
+
+    // Tests ADD with 2 ints
+    #[test]
+    fn add_int_int() -> () {
+        let args: Option<&Vec<Value>> = None;
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Int(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+        let (stack, _): (Stack, StackSnapshots) =
+            Instruction::ADD.run(args, initial_stack, stack_snapshots, &options);
+
+        assert!(stack.len() == 1);
+        assert_eq!(stack[0].value, MValue::Int(11));
+    }
+
+    // Tests ADD with 1 int and 1 nat
+    #[test]
+    fn add_int_nat() -> () {
+        let args: Option<&Vec<Value>> = None;
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+        let (stack, _): (Stack, StackSnapshots) =
+            Instruction::ADD.run(args, initial_stack, stack_snapshots, &options);
+
+        assert!(stack.len() == 1);
+        assert_eq!(stack[0].value, MValue::Int(11));
+    }
+
+    // Tests ADD with 2 nats
+    #[test]
+    fn add_nat_nat() -> () {
+        let args: Option<&Vec<Value>> = None;
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Nat(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+        let (stack, _): (Stack, StackSnapshots) =
+            Instruction::ADD.run(args, initial_stack, stack_snapshots, &options);
+
+        assert!(stack.len() == 1);
+        assert_eq!(stack[0].value, MValue::Nat(11));
+    }
 }

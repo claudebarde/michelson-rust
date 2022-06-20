@@ -1,10 +1,15 @@
 use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{int, mutez, nat, timestamp, MType, MValue};
-use crate::stack::{create_stack_element, Stack, StackElement, StackFuncs};
+use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use serde_json::Value;
 
-pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Result<Stack, String> {
+pub fn run(
+    stack: Stack,
+    args: Option<&Vec<Value>>,
+    options: &RunOptions,
+    mut stack_snapshots: StackSnapshots,
+) -> Result<(Stack, StackSnapshots), String> {
     // checking the stack is not required
     // checks that the arguments are correct
     let new_stack_element: Result<StackElement, String> = match args {
@@ -71,13 +76,14 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
                 };
                 // checks that the value matches the type
                 match element_type {
+                    // numeric types
                     MType::Int => {
                         let (val_type, value) = element_value;
                         if val_type == "int" {
                             match value.parse::<int>() {
                                 Ok(val) => {
                                     // creates the new stack element
-                                    Ok(create_stack_element(MValue::Int(val), Instruction::PUSH))
+                                    Ok(StackElement::new(MValue::Int(val), Instruction::PUSH))
                                 }
                                 Err(_) => Err(display_error(ErrorCode::InvalidArgument((
                                     String::from("numeric value"),
@@ -97,7 +103,7 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
                             match value.parse::<nat>() {
                                 Ok(val) => {
                                     // creates the new stack element
-                                    Ok(create_stack_element(MValue::Nat(val), Instruction::PUSH))
+                                    Ok(StackElement::new(MValue::Nat(val), Instruction::PUSH))
                                 }
                                 Err(_) => Err(display_error(ErrorCode::InvalidArgument((
                                     String::from("numeric value"),
@@ -117,7 +123,7 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
                             match value.parse::<mutez>() {
                                 Ok(val) => {
                                     // creates the new stack element
-                                    Ok(create_stack_element(MValue::Mutez(val), Instruction::PUSH))
+                                    Ok(StackElement::new(MValue::Mutez(val), Instruction::PUSH))
                                 }
                                 Err(_) => Err(display_error(ErrorCode::InvalidArgument((
                                     String::from("numeric value"),
@@ -137,10 +143,7 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
                             match value.parse::<timestamp>() {
                                 Ok(val) => {
                                     // creates the new stack element
-                                    Ok(create_stack_element(
-                                        MValue::Timestamp(val),
-                                        Instruction::PUSH,
-                                    ))
+                                    Ok(StackElement::new(MValue::Timestamp(val), Instruction::PUSH))
                                 }
                                 Err(_) => Err(display_error(ErrorCode::InvalidArgument((
                                     String::from("numeric value"),
@@ -150,6 +153,18 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
                         } else {
                             Err(display_error(ErrorCode::InvalidArgument((
                                 String::from("int"),
+                                val_type,
+                            ))))
+                        }
+                    }
+                    // other types
+                    MType::String => {
+                        let (val_type, value) = element_value;
+                        if val_type == "string" {
+                            Ok(StackElement::new(MValue::String(value), Instruction::PUSH))
+                        } else {
+                            Err(display_error(ErrorCode::InvalidArgument((
+                                String::from("string"),
                                 val_type,
                             ))))
                         }
@@ -172,8 +187,10 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
         Err(err) => Err(err),
         Ok(stack_el) => {
             let new_stack = stack.insert_at(vec![stack_el], options.pos);
+            // updates the stack snapshots
+            stack_snapshots.push(new_stack.clone());
             // returns the new stack
-            Ok(new_stack)
+            Ok((new_stack, stack_snapshots))
         }
     }
 }

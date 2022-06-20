@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Or {
     Left(MValue),
     Right(MValue),
@@ -32,7 +32,7 @@ pub type pair<A, B> = (A, B);
 pub type list<T> = Vec<T>;
 pub type set<T> = Vec<T>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MType {
     Unit,
     Never,
@@ -79,31 +79,31 @@ impl MType {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct OptionValue {
     pub m_type: MType,
     pub value: Box<MValue>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct OrValue {
     pub m_type: (MType, MType),
     pub value: Box<Or>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct PairValue {
     pub m_type: (MType, MType),
     pub value: Box<(MValue, MValue)>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CollectionValue {
     pub m_type: MType,
     pub value: Box<Vec<MValue>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MValue {
     Unit,
     Never,

@@ -1,9 +1,14 @@
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{CollectionValue, MType, MValue};
-use crate::stack::{create_stack_element, Stack, StackElement};
+use crate::stack::{Stack, StackElement, StackSnapshots};
 use serde_json::Value;
 
-pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Result<Stack, String> {
+pub fn run(
+    stack: Stack,
+    args: Option<&Vec<Value>>,
+    options: &RunOptions,
+    mut stack_snapshots: StackSnapshots,
+) -> Result<(Stack, StackSnapshots), String> {
     // no need to check the stack, it can be empty
     let new_stack: Stack = match args {
         None => panic!("Arguments for NIL instruction cannot be empty"),
@@ -16,7 +21,7 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
                             Err(err) => panic!("{}", err),
                             Ok(type_) => type_,
                         };
-                        create_stack_element(
+                        StackElement::new(
                             MValue::List(CollectionValue {
                                 m_type: list_type,
                                 value: Box::new(vec![]),
@@ -34,6 +39,8 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
             }
         }
     };
+    // updates the stack snapshots
+    stack_snapshots.push(new_stack.clone());
 
-    Ok(new_stack)
+    Ok((new_stack, stack_snapshots))
 }

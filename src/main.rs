@@ -8,7 +8,7 @@ mod stack;
 mod utils;
 use instructions::Instruction;
 use m_types::{or, MType, MValue, Or, OrValue, PairValue};
-use stack::{create_stack_element, Stack};
+use stack::{Stack, StackElement, StackSnapshots};
 
 fn main() {
     let michelson_code = r#"
@@ -24,7 +24,7 @@ fn main() {
         Err((err, _)) => panic!("{}", err),
     };
     // println!("{:?}", parsed_json.clone().unwrap());
-    let run_result: Result<Stack, String> = match parsed_json {
+    let run_result: Result<(Stack, StackSnapshots), String> = match parsed_json {
         Ok(json) => {
             // (or (or (int %decrement) (int %increment)) (unit %reset))
             // addition params
@@ -55,20 +55,23 @@ fn main() {
             let storage_type = MType::Int;
             println!("\nInput: param = {:?} / storage = {:?}\n", param, storage);
             // creates the initial stack
-            let stack: Stack = vec![create_stack_element(
+            let stack: Stack = vec![StackElement::new(
                 MValue::Pair(PairValue {
                     m_type: (MType::Or(Box::new(param_type)), storage_type),
                     value: Box::new((param, storage)),
                 }),
                 Instruction::INIT,
             )];
-            parser::run(&json, stack)
+            let stack_snapshots: StackSnapshots = vec![stack.clone()];
+            parser::run(&json, stack, stack_snapshots)
         }
         Err(err) => panic!("{}", err),
     };
-    let new_stack = run_result.unwrap();
+    let (new_stack, stack_snapshots) = run_result.unwrap();
     println!("\nNew stack: {:#?}", new_stack);
-    println!("Number of elements in the stack: {}", new_stack.len())
+    println!("Number of elements in the stack: {}", new_stack.len());
+    // println!("{:#?}", stack_snapshots);
+    println!("Number of stack snapshots: {}", stack_snapshots.len());
     /*let michelson_code = r#"
         ## Checks if amount is equal to zero
         AMOUNT ;

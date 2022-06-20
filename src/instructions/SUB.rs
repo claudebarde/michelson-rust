@@ -1,8 +1,12 @@
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{int, timestamp, MType, MValue};
-use crate::stack::{create_stack_element, Stack, StackFuncs};
+use crate::m_types::{int, timestamp, MValue};
+use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 
-pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
+pub fn run(
+    stack: Stack,
+    options: &RunOptions,
+    mut stack_snapshots: StackSnapshots,
+) -> Result<(Stack, StackSnapshots), String> {
     // checks the stack
     match stack.check_depth(2, Instruction::SUB) {
         Ok(_) => (),
@@ -31,9 +35,11 @@ pub fn run(stack: Stack, options: &RunOptions) -> Result<Stack, String> {
     let (_, new_stack) = stack.remove_at(options.pos);
     let (_, new_stack) = new_stack.remove_at(options.pos);
     // pushes the new value to the top of the stack
-    let mut stack_head = vec![create_stack_element(new_val, Instruction::SUB)];
+    let mut stack_head = vec![StackElement::new(new_val, Instruction::SUB)];
     let mut stack_tail = new_stack;
     stack_head.append(&mut stack_tail);
+    // updates the stack snapshots
+    stack_snapshots.push(stack_head.clone());
     // returns the stack
-    Ok(stack_head)
+    Ok((stack_head, stack_snapshots))
 }

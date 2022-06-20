@@ -1,10 +1,15 @@
 use crate::errors::{display_error, ErrorCode};
 use crate::instructions::Instruction;
 use crate::instructions::RunOptions;
-use crate::stack::{Stack, StackFuncs};
+use crate::stack::{Stack, StackFuncs, StackSnapshots};
 use serde_json::Value;
 
-pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Result<Stack, String> {
+pub fn run(
+    stack: Stack,
+    args: Option<&Vec<Value>>,
+    options: &RunOptions,
+    mut stack_snapshots: StackSnapshots,
+) -> Result<(Stack, StackSnapshots), String> {
     // checks the stack
     match stack.check_depth(1, Instruction::DROP) {
         Ok(_) => (),
@@ -52,12 +57,14 @@ pub fn run(stack: Stack, args: Option<&Vec<Value>>, options: &RunOptions) -> Res
     };
 
     // drops the element at position - 1
-    let new_stack = stack
+    let new_stack: Stack = stack
         .into_iter()
         .enumerate()
         .filter(|&(i, _)| i > el_to_drop_pos - 1)
         .map(|(_, e)| e)
         .collect();
+    // updates the stack snapshots
+    stack_snapshots.push(new_stack.clone());
     // returns the new stack
-    Ok(new_stack)
+    Ok((new_stack, stack_snapshots))
 }

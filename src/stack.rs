@@ -9,12 +9,18 @@ pub struct StackElement {
 }
 
 impl StackElement {
+    pub fn new(value: MValue, instruction: Instruction) -> StackElement {
+        // TODO: create a function to validate the Michelson type
+        StackElement { value, instruction }
+    }
+
     pub fn get_val(&self) -> MValue {
         self.value.clone()
     }
 }
 
 pub type Stack = Vec<StackElement>;
+pub type StackSnapshots = Vec<Stack>;
 
 pub trait StackFuncs {
     /// Helper function to insert one or multiple stack elements
@@ -62,10 +68,4 @@ impl StackFuncs for Stack {
         }
         Ok(())
     }
-}
-
-/// Helper function to create a new stack element
-pub fn create_stack_element(value: MValue, instruction: Instruction) -> StackElement {
-    // TODO: create a function to validate the Michelson type
-    StackElement { value, instruction }
 }

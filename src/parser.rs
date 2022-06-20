@@ -1,6 +1,6 @@
 use regex::Regex;
 use serde_json::{Value};
-use crate::stack::{ Stack };
+use crate::stack::{ Stack, StackSnapshots };
 use crate::instructions::{Instruction, RunOptions, RunOptionsContext};
 
 #[derive(Debug)]
@@ -266,7 +266,7 @@ pub fn to_json(ast: &Vec<ParsedCode>) -> Result<String, String> {
 }
 
 /// runs JSON Michelson code provided a parameter value and a storage
-pub fn run(json: &str, mut stack: Stack) -> Result<Stack, String> {    
+pub fn run(json: &str, mut stack: Stack, mut stack_snapshots: StackSnapshots) -> Result<(Stack, StackSnapshots), String> {    
     // sets default options
     let options = RunOptions {
         context: RunOptionsContext {
@@ -293,10 +293,11 @@ pub fn run(json: &str, mut stack: Stack) -> Result<Stack, String> {
                 };
             println!("{:?}", instruction);
             let args = val["args"].as_array();
-            stack = Instruction::run(instruction, args, stack, &options);
+            // println!("snapshot: {:?}", stack_snapshots);
+            (stack, stack_snapshots) = instruction.run(args, stack, stack_snapshots, &options);
         }
 
-        Ok(stack)
+        Ok((stack, stack_snapshots))
     } else {
         Err(String::from("Unexpected type output for JSON value, expected an array"))
     }
