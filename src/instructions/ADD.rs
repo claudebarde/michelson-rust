@@ -82,11 +82,12 @@ pub fn run(
 
 #[cfg(test)]
 mod tests {
-    use crate::instructions::{Instruction, RunOptions, RunOptionsContext};
+    use super::*;
+    use crate::instructions::RunOptionsContext;
     use crate::m_types::MValue;
-    use crate::stack::{Stack, StackElement, StackSnapshots};
     use serde_json::Value;
 
+    // PASSING TESTS
     // Tests ADD with 2 ints
     #[test]
     fn add_int_int() -> () {
@@ -157,5 +158,47 @@ mod tests {
 
         assert!(stack.len() == 1);
         assert_eq!(stack[0].value, MValue::Nat(11));
+    }
+
+    // FAILING TESTS
+    // ADD with strings
+    #[test]
+    #[should_panic(expected = "Cannot add together values of type string and nat")]
+    fn add_string_nat() {
+        let args: Option<&Vec<Value>> = None;
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::String(String::from("5")), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+        Instruction::ADD.run(args, initial_stack, stack_snapshots, &options);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot add together values of type mutez and nat")]
+    fn add_mutez_nat() {
+        let args: Option<&Vec<Value>> = None;
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Mutez(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+        Instruction::ADD.run(args, initial_stack, stack_snapshots, &options);
     }
 }
