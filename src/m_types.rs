@@ -74,7 +74,7 @@ impl MType {
             "timestamp" => Ok(MType::Timestamp),
             "address" => Ok(MType::Address),
             "operation" => Ok(MType::Operation),
-            _ => Err(String::from("Cannot cast string to complex type yet")),
+            _ => Err(String::from(format!("Unknown type '{}'", str))),
         }
     }
 }
