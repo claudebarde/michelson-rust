@@ -59,6 +59,7 @@ pub fn run(
                             Some (str) => Ok((String::from("string"), String::from(str)))
                         }
                     } else {
+                        //TODO: the property can also be "prim"
                         Err(format!(
                             "JSON value for PUSH value argument is not valid: expected \"int\" or \"string\", but got {}",
                             second_arg
@@ -191,6 +192,208 @@ pub fn run(
             stack_snapshots.push(new_stack.clone());
             // returns the new stack
             Ok((new_stack, stack_snapshots))
+        }
+    }
+}
+
+/**
+ * TESTS
+ */
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::instructions::RunOptionsContext;
+    use serde_json::{json, Value};
+
+    // PASSING
+    #[test]
+    fn push_success() {
+        let arg_type: Value = json!({"prim": "string"});
+        let arg_value: Value = json!({"string": "FA2_NOT_OPERATOR"});
+        let arg_vec = vec![arg_type, arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Ok((new_stack, _)) => {
+                assert!(new_stack.len() == 4);
+                assert!(new_stack[0].value == MValue::String(String::from("FA2_NOT_OPERATOR")));
+            }
+            Err(_) => assert!(false),
+        }
+    }
+
+    // FAILING
+    #[test]
+    #[should_panic(expected = "Unexpected number of arguments, expected `2`, got `1`")]
+    fn pair_wrong_args_number() {
+        let arg_value: Value = json!({"string": "FA2_NOT_OPERATOR"});
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => panic!("{}", err),
+        }
+    }
+
+    // wrong argument type
+    #[test]
+    #[should_panic(
+        expected = "Expected an object with a \"prim\" field in JSON value for PUSH, got Object({\"int\": String(\"0\")}"
+    )]
+    fn pair_wrong_args_type() {
+        let arg_type: Value = json!({"int": "0"});
+        let arg_value: Value = json!({"string": "FA2_NOT_OPERATOR"});
+        let arg_vec = vec![arg_type, arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => panic!("{}", err),
+        }
+    }
+
+    // wrong Michelson type
+    #[test]
+    #[should_panic(expected = "Unknown type 'test'")]
+    fn pair_wrong_mich_type() {
+        let arg_type: Value = json!({"prim": "test"});
+        let arg_value: Value = json!({"string": "FA2_NOT_OPERATOR"});
+        let arg_vec = vec![arg_type, arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => panic!("{}", err),
+        }
+    }
+
+    // wrong argument value
+    #[test]
+    #[should_panic(
+        expected = "Expected value for \"string\" property to be a string (at PUSH instruction)"
+    )]
+    fn pair_wrong_args_value() {
+        let arg_type: Value = json!({"prim": "string"});
+        let arg_value: Value = json!({"string": ["FA2_NOT_OPERATOR"]});
+        let arg_vec = vec![arg_type, arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => panic!("{}", err),
+        }
+    }
+
+    // value doesn't match its type
+    #[test]
+    #[should_panic(expected = "Invalid argument provided, expected `string`, but got `int`")]
+    fn pair_wrong_type_value() {
+        let arg_type: Value = json!({"prim": "string"});
+        let arg_value: Value = json!({"int": "5"});
+        let arg_vec = vec![arg_type, arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => panic!("{}", err),
         }
     }
 }

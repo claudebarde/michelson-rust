@@ -25,6 +25,11 @@ pub type StackSnapshots = Vec<Stack>;
 pub trait StackFuncs {
     /// Helper function to insert one or multiple stack elements
     /// at a given position in the stack
+    /// It removes the element currently at the specified index
+    fn insert_instead(&self, els_to_insert: Vec<StackElement>, index: usize) -> Stack;
+    /// Helper function to insert one or multiple elements
+    /// at a given position in the stack
+    /// It keeps all the elements in the stack and shifts their position
     fn insert_at(&self, els_to_insert: Vec<StackElement>, index: usize) -> Stack;
     /// Helper function to remove an element from the stack at the provided index
     /// Returns the element and the updated stack
@@ -36,7 +41,7 @@ pub trait StackFuncs {
 impl StackFuncs for Stack {
     /// Helper function to insert one or multiple stack elements
     /// at a given position in the stack
-    fn insert_at(&self, els_to_insert: Vec<StackElement>, index: usize) -> Stack {
+    fn insert_instead(&self, els_to_insert: Vec<StackElement>, index: usize) -> Stack {
         let mut stack_start = self.clone();
         let mut vec_tail = stack_start.split_off(index);
         // reverses the vector order to remove the first element
@@ -49,6 +54,17 @@ impl StackFuncs for Stack {
         stack_start.extend(els_to_insert);
         stack_start.extend(vec_tail);
         return stack_start;
+    }
+    /// Helper function to insert one or multiple elements
+    /// at a given position in the stack
+    /// It keeps all the elements in the stack and shifts their position
+    fn insert_at(&self, els_to_insert: Vec<StackElement>, index: usize) -> Stack {
+        let mut vec_head = self.clone();
+        let vec_tail = vec_head.split_off(index);
+        // concatenates the 3 vectors
+        vec_head.extend(els_to_insert);
+        vec_head.extend(vec_tail);
+        return vec_head;
     }
     /// Helper function to remove an element from the stack at the provided index
     /// Returns the element and the updated stack

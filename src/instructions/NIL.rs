@@ -1,6 +1,6 @@
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{CollectionValue, MType, MValue};
-use crate::stack::{Stack, StackElement, StackSnapshots};
+use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use serde_json::Value;
 
 pub fn run(
@@ -32,9 +32,7 @@ pub fn run(
                 match new_list_res {
                     Err(err) => Err(err),
                     Ok(new_list) => {
-                        let mut new_stack: Stack = vec![new_list];
-                        let mut old_stack = stack.clone();
-                        new_stack.append(&mut old_stack);
+                        let new_stack = stack.insert_at(vec![new_list], options.pos);
                         Ok(new_stack)
                     }
                 }
