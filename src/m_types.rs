@@ -269,4 +269,18 @@ impl MValue {
             _ => false,
         }
     }
+
+    /// safeguard method
+    /// checks if the types of the pair fields match their values
+    pub fn check_pair(&self) -> bool {
+        match &self {
+            MValue::Pair(pair_val) => {
+                let (left_type, right_type) = &pair_val.m_type;
+                let (left_val, right_val) = &*pair_val.value;
+
+                &left_val.get_type() == left_type && &right_val.get_type() == right_type
+            },
+            _ => false
+        }
+    }
 }

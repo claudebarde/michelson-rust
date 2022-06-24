@@ -37,18 +37,130 @@ pub fn run(
         Ok(_) => (),
         Err(err) => panic!("{}", err),
     };
-    // unpairs the value
-    match pair::unpair(stack[options.pos].value.clone()) {
-        Ok((el1, el2)) => {
-            // creates the new stack elements
-            let stack_el1 = StackElement::new(el1, Instruction::UNPAIR);
-            let stack_el2 = StackElement::new(el2, Instruction::UNPAIR);
-            let els_to_insert = vec![stack_el1, stack_el2];
-            let new_stack = stack.clone().insert_instead(els_to_insert, options.pos);
-            // updates the stack snapshots
-            stack_snapshots.push(new_stack.clone());
-            Ok((new_stack, stack_snapshots))
+    // checks the pair is valid
+    if stack[options.pos].value.check_pair() {
+        // unpairs the value
+        match pair::unpair(stack[options.pos].value.clone()) {
+            Ok((el1, el2)) => {
+                // creates the new stack elements
+                let stack_el1 = StackElement::new(el1, Instruction::UNPAIR);
+                let stack_el2 = StackElement::new(el2, Instruction::UNPAIR);
+                let els_to_insert = vec![stack_el1, stack_el2];
+                let new_stack = stack.clone().insert_instead(els_to_insert, options.pos);
+                // updates the stack snapshots
+                stack_snapshots.push(new_stack.clone());
+                Ok((new_stack, stack_snapshots))
+            },
+            Err(err) => Err(err)
         }
-        Err(err) => panic!("{}", err),
+    } else {
+        Err(format!("Invalid pair found at UNPAIR instruction: {:?}", stack[options.pos].value))
     }
 }
+
+/**
+ * TESTS
+ */
+
+ #[cfg(test)]
+ mod tests {
+    use super::*;
+    use crate::m_types::{MType, PairValue};
+    use crate::instructions::RunOptionsContext;
+
+    // PASSING
+    #[test]
+    fn unpair_success() {
+        let args: Option<&Vec<Value>> = None;
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Pair(PairValue {
+                    m_type: (MType::Int, MType::Nat),
+                    value: Box::new((MValue::Int(6), MValue::Nat(11)))
+                }),
+                Instruction::INIT
+            ),
+            StackElement::new(MValue::Int(6), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Ok((new_stack, _)) => {
+                assert!(new_stack.len() == 4);
+                assert!(new_stack[0].value == MValue::Int(6));
+                assert!(new_stack[1].value == MValue::Nat(11));
+            }
+            Err(_) => assert!(false),
+        }
+    }
+
+    // FAILING
+    // stack isn't deep enough
+    #[test]
+    #[should_panic(expected = "Unexpected stack length, expected a length of 1 for instruction UNPAIR, got 0")]
+    fn unpair_wrong_stack() {
+        let args: Option<&Vec<Value>> = None;
+        let initial_stack: Stack = vec![];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 0);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => panic!("{}", err),
+        }
+    }
+
+    // pair is invalid
+    #[test]
+    #[should_panic(expected = "Invalid pair found at UNPAIR instruction: ")]
+    fn unpair_wrong_pair() {
+        let args: Option<&Vec<Value>> = None;
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Pair(PairValue {
+                    m_type: (MType::Nat, MType::Nat),
+                    value: Box::new((MValue::Int(6), MValue::Nat(11)))
+                }),
+                Instruction::INIT
+            ),
+            StackElement::new(MValue::Int(6), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => panic!("{}", err),
+        }
+    }
+ }
