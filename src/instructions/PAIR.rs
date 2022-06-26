@@ -3,6 +3,8 @@ use crate::m_types::MValue;
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use crate::utils::pair;
 
+// https://tezos.gitlab.io/michelson-reference/#instr-PAIR
+
 pub fn run(
     stack: Stack,
     options: &RunOptions,

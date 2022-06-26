@@ -3,6 +3,8 @@ use crate::m_types::{CollectionValue, MType, MValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use serde_json::Value;
 
+// https://tezos.gitlab.io/michelson-reference/#instr-NIL
+
 pub fn run(
     stack: Stack,
     args: Option<&Vec<Value>>,

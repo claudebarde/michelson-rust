@@ -3,6 +3,8 @@ use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{int, timestamp, MValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 
+// https://tezos.gitlab.io/michelson-reference/#instr-ADD
+
 pub fn run(
     stack: Stack,
     options: &RunOptions,
@@ -85,13 +87,11 @@ mod tests {
     use super::*;
     use crate::instructions::RunOptionsContext;
     use crate::m_types::MValue;
-    use serde_json::Value;
 
     // PASSING TESTS
     // Tests ADD with 2 ints
     #[test]
     fn add_int_int() -> () {
-        let args: Option<&Vec<Value>> = None;
         let initial_stack: Stack = vec![
             StackElement::new(MValue::Int(5), Instruction::INIT),
             StackElement::new(MValue::Int(6), Instruction::INIT),
@@ -105,17 +105,19 @@ mod tests {
             },
             pos: 0,
         };
-        let (stack, _): (Stack, StackSnapshots) =
-            Instruction::ADD.run(args, initial_stack, stack_snapshots, &options);
 
-        assert!(stack.len() == 1);
-        assert_eq!(stack[0].value, MValue::Int(11));
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 1);
+                assert_eq!(stack[0].value, MValue::Int(11));
+            }
+        }        
     }
 
     // Tests ADD with 1 int and 1 nat
     #[test]
     fn add_int_nat() -> () {
-        let args: Option<&Vec<Value>> = None;
         let initial_stack: Stack = vec![
             StackElement::new(MValue::Int(5), Instruction::INIT),
             StackElement::new(MValue::Nat(6), Instruction::INIT),
@@ -129,17 +131,19 @@ mod tests {
             },
             pos: 0,
         };
-        let (stack, _): (Stack, StackSnapshots) =
-            Instruction::ADD.run(args, initial_stack, stack_snapshots, &options);
 
-        assert!(stack.len() == 1);
-        assert_eq!(stack[0].value, MValue::Int(11));
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 1);
+                assert_eq!(stack[0].value, MValue::Int(11));
+            }
+        }
     }
 
     // Tests ADD with 2 nats
     #[test]
     fn add_nat_nat() -> () {
-        let args: Option<&Vec<Value>> = None;
         let initial_stack: Stack = vec![
             StackElement::new(MValue::Nat(5), Instruction::INIT),
             StackElement::new(MValue::Nat(6), Instruction::INIT),
@@ -153,11 +157,14 @@ mod tests {
             },
             pos: 0,
         };
-        let (stack, _): (Stack, StackSnapshots) =
-            Instruction::ADD.run(args, initial_stack, stack_snapshots, &options);
 
-        assert!(stack.len() == 1);
-        assert_eq!(stack[0].value, MValue::Nat(11));
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 1);
+                assert_eq!(stack[0].value, MValue::Nat(11));
+            }
+        }
     }
 
     // FAILING TESTS
@@ -165,7 +172,6 @@ mod tests {
     #[test]
     #[should_panic(expected = "Cannot add together values of type string and nat")]
     fn add_string_nat() {
-        let args: Option<&Vec<Value>> = None;
         let initial_stack: Stack = vec![
             StackElement::new(MValue::String(String::from("5")), Instruction::INIT),
             StackElement::new(MValue::Nat(6), Instruction::INIT),
@@ -179,13 +185,16 @@ mod tests {
             },
             pos: 0,
         };
-        Instruction::ADD.run(args, initial_stack, stack_snapshots, &options);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => panic!("{}", err),
+            Ok(_) => assert!(false)
+        }
     }
 
     #[test]
     #[should_panic(expected = "Cannot add together values of type mutez and nat")]
     fn add_mutez_nat() {
-        let args: Option<&Vec<Value>> = None;
         let initial_stack: Stack = vec![
             StackElement::new(MValue::Mutez(5), Instruction::INIT),
             StackElement::new(MValue::Nat(6), Instruction::INIT),
@@ -199,6 +208,10 @@ mod tests {
             },
             pos: 0,
         };
-        Instruction::ADD.run(args, initial_stack, stack_snapshots, &options);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => panic!("{}", err),
+            Ok(_) => assert!(false)
+        }
     }
 }

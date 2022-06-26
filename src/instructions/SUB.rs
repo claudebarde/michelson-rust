@@ -2,6 +2,8 @@ use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{int, timestamp, MValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 
+// https://tezos.gitlab.io/michelson-reference/#instr-SUB
+
 pub fn run(
     stack: Stack,
     options: &RunOptions,

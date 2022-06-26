@@ -5,6 +5,8 @@ use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use crate::utils::pair;
 use serde_json::Value;
 
+// https://tezos.gitlab.io/michelson-reference/#instr-UNPAIR
+
 /// checks if the stack has the correct properties
 fn check_stack(stack: &Stack, pos: usize) -> Result<(), String> {
     // stack must have at least one element

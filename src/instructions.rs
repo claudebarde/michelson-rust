@@ -2,6 +2,7 @@ use crate::m_types::{address, mutez};
 use crate::stack::{Stack, StackSnapshots};
 use regex::Regex;
 use serde_json::Value;
+mod ABS;
 mod ADD;
 mod DROP;
 mod IF_LEFT;
@@ -15,6 +16,7 @@ mod UNPAIR;
 #[derive(Debug, Clone)]
 pub enum Instruction {
     ADD,
+    ABS,
     DROP,
     IF_LEFT,
     NIL,
@@ -44,6 +46,7 @@ impl Instruction {
         let formatted_input: &str = &format_regex.replace_all(input, "").to_string();
         match formatted_input {
             "ADD" => Ok(Instruction::ADD),
+            "ABS" => Ok(Instruction::ABS),
             "DROP" => Ok(Instruction::DROP),
             "IF_LEFT" => Ok(Instruction::IF_LEFT),
             "NIL" => Ok(Instruction::NIL),
@@ -65,6 +68,7 @@ impl Instruction {
         options: &RunOptions,
     ) -> (Stack, StackSnapshots) {
         let result = match self {
+            Instruction::ABS => ABS::run(initial_stack, options, stack_snapshots),
             Instruction::ADD => ADD::run(initial_stack, options, stack_snapshots),
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),
             Instruction::IF_LEFT => IF_LEFT::run(initial_stack, args, options, stack_snapshots),

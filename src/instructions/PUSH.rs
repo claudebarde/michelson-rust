@@ -4,6 +4,8 @@ use crate::m_types::{int, mutez, nat, timestamp, MType, MValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use serde_json::Value;
 
+// https://tezos.gitlab.io/michelson-reference/#instr-PUSH
+
 pub fn run(
     stack: Stack,
     args: Option<&Vec<Value>>,

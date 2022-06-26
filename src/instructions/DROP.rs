@@ -4,6 +4,8 @@ use crate::instructions::RunOptions;
 use crate::stack::{Stack, StackFuncs, StackSnapshots};
 use serde_json::Value;
 
+// https://tezos.gitlab.io/michelson-reference/#instr-DROP
+
 pub fn run(
     stack: Stack,
     args: Option<&Vec<Value>>,

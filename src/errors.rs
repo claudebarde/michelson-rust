@@ -1,5 +1,5 @@
 use crate::instructions::Instruction;
-use crate::m_types::{mutez, nat};
+use crate::m_types::{mutez, nat, MType};
 
 #[derive(Debug)]
 pub enum ErrorCode {
@@ -10,6 +10,7 @@ pub enum ErrorCode {
     Noop(String),
     StackNotDeepEnough((usize, usize, Instruction)),
     UnexpectedArgsNumber((usize, usize)),
+    InvalidType((MType, MType, Instruction)),
     Unknown,
     WrongType((String, String)),
 }
@@ -38,5 +39,8 @@ pub fn display_error(error_code: ErrorCode) -> String {
             "Invalid argument provided, expected `{}`, but got `{}`",
             expected, got
         ),
+        ErrorCode::InvalidType((expected, got, instruction)) => format!(
+            "Invalid type for `{:?}` expected {:?}, but got {:?}", instruction, expected, got
+        )
     }
 }
