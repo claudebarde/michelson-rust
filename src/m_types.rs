@@ -82,7 +82,7 @@ impl MType {
 #[derive(Debug, Clone, PartialEq)]
 pub struct OptionValue {
     pub m_type: MType,
-    pub value: Box<MValue>,
+    pub value: Box<Option<MValue>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -4,7 +4,7 @@ I am writing this Michelson engine as I am learning Rust :)
 
 Available instructions (implemented and tested):
 
-- [ ] ABS
+- [x] ABS
 - [x] ADD
 - [ ] AMOUNT
 - [ ] DIG
@@ -22,7 +22,7 @@ Available instructions (implemented and tested):
 - [x] PAIR
 - [x] PUSH
 - [ ] SENDER
-- [ ] SOME
+- [x] SOME
 - [x] SUB
 - [x] SWAP
 - [x] UNPAIR

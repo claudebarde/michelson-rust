@@ -9,11 +9,12 @@ mod IF_LEFT;
 mod NIL;
 mod PAIR;
 mod PUSH;
+mod SOME;
 mod SUB;
 mod SWAP;
 mod UNPAIR;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Instruction {
     ADD,
     ABS,
@@ -22,6 +23,7 @@ pub enum Instruction {
     NIL,
     PAIR,
     PUSH,
+    SOME,
     SUB,
     SWAP,
     UNPAIR,
@@ -52,6 +54,7 @@ impl Instruction {
             "NIL" => Ok(Instruction::NIL),
             "PAIR" => Ok(Instruction::PAIR),
             "PUSH" => Ok(Instruction::PUSH),
+            "SOME" => Ok(Instruction::SOME),
             "SUB" => Ok(Instruction::SUB),
             "SWAP" => Ok(Instruction::SWAP),
             "UNPAIR" => Ok(Instruction::UNPAIR),
@@ -75,6 +78,7 @@ impl Instruction {
             Instruction::NIL => NIL::run(initial_stack, args, options, stack_snapshots),
             Instruction::PAIR => PAIR::run(initial_stack, options, stack_snapshots),
             Instruction::PUSH => PUSH::run(initial_stack, args, options, stack_snapshots),
+            Instruction::SOME => SOME::run(initial_stack, options, stack_snapshots),
             Instruction::SUB => SUB::run(initial_stack, options, stack_snapshots),
             Instruction::SWAP => SWAP::run(initial_stack, options, stack_snapshots),
             Instruction::UNPAIR => UNPAIR::run(initial_stack, args, options, stack_snapshots),
