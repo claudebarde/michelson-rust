@@ -7,6 +7,7 @@ Available instructions (implemented and tested):
 - [x] ABS
 - [x] ADD
 - [ ] AMOUNT
+- [x] COMPARE
 - [ ] DIG
 - [ ] DIP
 - [x] DROP
@@ -18,6 +19,7 @@ Available instructions (implemented and tested):
 - [ ] IFCMP\*
 - [ ] IF_NONE
 - [ ] MEM
+- [ ] NEQ
 - [x] NIL
 - [x] PAIR
 - [x] PUSH

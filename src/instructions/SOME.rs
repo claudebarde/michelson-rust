@@ -18,11 +18,13 @@ pub fn run(
     let val_to_wrap = stack[options.pos].value.clone();
     let new_val: MValue = MValue::Option(OptionValue {
         m_type: val_to_wrap.get_type(),
-        value: Box::new(Option::Some(val_to_wrap))
+        value: Box::new(Option::Some(val_to_wrap)),
     });
     // updates the stack
-    let new_stack = 
-        stack.insert_instead(vec![StackElement::new(new_val, Instruction::SOME)], options.pos);
+    let new_stack = stack.insert_instead(
+        vec![StackElement::new(new_val, Instruction::SOME)],
+        options.pos,
+    );
     // updates the stack snapshots
     stack_snapshots.push(new_stack.clone());
 
@@ -33,11 +35,11 @@ pub fn run(
  * TESTS
  */
 
- #[cfg(test)]
- mod tests {
+#[cfg(test)]
+mod tests {
     use super::*;
-    use crate::m_types::MType;
     use crate::instructions::RunOptionsContext;
+    use crate::m_types::MType;
 
     // PASSING
     #[test]
@@ -62,10 +64,13 @@ pub fn run(
             Err(_) => assert!(false),
             Ok((stack, _)) => {
                 assert!(stack.len() == 2);
-                assert_eq!(stack[0].value, MValue::Option(OptionValue {
-                    m_type: MType::Int,
-                    value: Box::new(Option::Some(MValue::Int(5)))
-                }));
+                assert_eq!(
+                    stack[0].value,
+                    MValue::Option(OptionValue {
+                        m_type: MType::Int,
+                        value: Box::new(Option::Some(MValue::Int(5)))
+                    })
+                );
                 assert_eq!(stack[0].instruction, Instruction::SOME);
                 assert_eq!(stack[1].value, MValue::Nat(6));
                 assert_eq!(stack[1].instruction, Instruction::INIT);
@@ -76,7 +81,9 @@ pub fn run(
     // FAILING
     // empty stack
     #[test]
-    #[should_panic(expected = "Unexpected stack length, expected a length of 1 for instruction SOME, got 0")]
+    #[should_panic(
+        expected = "Unexpected stack length, expected a length of 1 for instruction SOME, got 0"
+    )]
     fn abs_empty_stack() {
         let initial_stack: Stack = vec![];
         let stack_snapshots = vec![];
@@ -93,7 +100,7 @@ pub fn run(
 
         match run(initial_stack, &options, stack_snapshots) {
             Err(err) => panic!("{}", err),
-            Ok(_) => assert!(false)
+            Ok(_) => assert!(false),
         }
     }
- }
+}

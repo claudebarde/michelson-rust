@@ -273,7 +273,7 @@ pub fn run(json: &str, mut stack: Stack, mut stack_snapshots: StackSnapshots) ->
             amount: 0,
             sender: String::from("test_sender"),
             source: String::from("test_source"),
-        },
+        }, 
         pos: 0
     };
     // loops through the JSON value
