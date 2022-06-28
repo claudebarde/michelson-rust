@@ -19,6 +19,17 @@ fn main() {
         NIL operation ;
         PAIR
     "#;
+    /*
+        UNPAIR ;
+         PUSH mutez 0 ;
+         AMOUNT ;
+         COMPARE ;
+         NEQ ;
+         IF { DROP 2 ; PUSH string "NO_AMOUNT_EXPECTED" ; FAILWITH }
+            { IF_LEFT { IF_LEFT { SWAP ; SUB } { ADD } } { DROP 2 ; PUSH int 0 } ;
+              NIL operation ;
+              PAIR }
+    */
     let parsed_michelson = parser::parse(String::from(michelson_code));
     // println!("{:#?}", parsed_michelson);
     let parsed_json = match parsed_michelson {

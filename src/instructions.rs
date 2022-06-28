@@ -4,6 +4,7 @@ use regex::Regex;
 use serde_json::Value;
 mod ABS;
 mod ADD;
+mod COMPARE;
 mod DROP;
 mod IF_LEFT;
 mod NIL;
@@ -18,6 +19,7 @@ mod UNPAIR;
 pub enum Instruction {
     ADD,
     ABS,
+    COMPARE,
     DROP,
     IF_LEFT,
     NIL,
@@ -49,6 +51,7 @@ impl Instruction {
         match formatted_input {
             "ADD" => Ok(Instruction::ADD),
             "ABS" => Ok(Instruction::ABS),
+            "COMPARE" => Ok(Instruction::COMPARE),
             "DROP" => Ok(Instruction::DROP),
             "IF_LEFT" => Ok(Instruction::IF_LEFT),
             "NIL" => Ok(Instruction::NIL),
@@ -73,6 +76,7 @@ impl Instruction {
         let result = match self {
             Instruction::ABS => ABS::run(initial_stack, options, stack_snapshots),
             Instruction::ADD => ADD::run(initial_stack, options, stack_snapshots),
+            Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),
             Instruction::IF_LEFT => IF_LEFT::run(initial_stack, args, options, stack_snapshots),
             Instruction::NIL => NIL::run(initial_stack, args, options, stack_snapshots),

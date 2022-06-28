@@ -1,6 +1,8 @@
 use bs58;
+use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Or {
     Left(MValue),
     Right(MValue),
@@ -38,8 +40,10 @@ pub type or<A, B> = (A, B);
 pub type pair<A, B> = (A, B);
 pub type list<T> = Vec<T>;
 pub type set<T> = Vec<T>;
+pub type map<K, V> = HashMap<K, V>;
+pub type big_map<K, V> = HashMap<K, V>;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum MType {
     Unit,
     Never,
@@ -61,6 +65,7 @@ pub enum MType {
     Pair(Box<(MType, MType)>),
     List(Box<MType>),
     Set(Box<MType>),
+    Map(Box<(MType, MType)>),
 }
 
 impl MType {
@@ -86,31 +91,53 @@ impl MType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct OptionValue {
     pub m_type: MType,
     pub value: Box<Option<MValue>>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct OrValue {
     pub m_type: (MType, MType),
     pub value: Box<Or>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PairValue {
     pub m_type: (MType, MType),
     pub value: Box<(MValue, MValue)>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct CollectionValue {
     pub m_type: MType,
     pub value: Box<Vec<MValue>>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MapValue {
+    pub key_type: MType,
+    pub value_type: MType,
+    pub size: usize,
+    pub value: map<MValue, MValue>,
+}
+
+impl Hash for MapValue {
+    fn hash<H>(&self, _: &mut H)
+    where
+        H: Hasher,
+    {
+    }
+}
+
+impl MapValue {
+    pub fn get_size(&self) -> usize {
+        self.size
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum MValue {
     Unit,
     Never,
@@ -132,6 +159,7 @@ pub enum MValue {
     Pair(PairValue),
     List(CollectionValue),
     Set(CollectionValue),
+    Map(MapValue),
 }
 
 impl MValue {
@@ -157,6 +185,7 @@ impl MValue {
             MValue::Pair(_) => String::from("pair"),
             MValue::List(_) => String::from("list"),
             MValue::Set(_) => String::from("set"),
+            MValue::Map(_) => String::from("map"),
         }
     }
 
@@ -182,6 +211,9 @@ impl MValue {
             MValue::Pair(val) => MType::Pair(Box::new(val.m_type.clone())),
             MValue::List(val) => MType::List(Box::new(val.m_type.clone())),
             MValue::Set(val) => MType::Set(Box::new(val.m_type.clone())),
+            MValue::Map(val) => {
+                MType::Map(Box::new((val.key_type.clone(), val.value_type.clone())))
+            }
         }
     }
 
