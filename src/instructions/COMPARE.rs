@@ -2,6 +2,7 @@ use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{AddressType, MValue, Or};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use std::cmp::Ordering;
+use std::fmt::format;
 
 // https://tezos.gitlab.io/michelson-reference/#instr-COMPARE
 
@@ -151,7 +152,10 @@ pub fn run(
             // never
             // TODO: implementation of comparison of never may be incorrect
             (MValue::Never, MValue::Never) => Err(String::from("Forbidden comparison of never")),
-            _ => Err(String::from("{:?} and {:?} are not comparable")),
+            _ => Err(format!(
+                "{:?} and {:?} are not comparable",
+                first_val, last_val
+            )),
         }
     }
     // pattern match the values according to their types
@@ -562,16 +566,424 @@ mod tests {
     }
 
     // COMPARES ADDRESSES
+    #[test]
+    fn compare_address_address() {
+        // comparing implicit account and contract addresses
+        // should output -1
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Address(String::from("tz1Me1MGhK7taay748h4gPnX2cXvbgL6xsYL")),
+                Instruction::INIT,
+            ),
+            StackElement::new(
+                MValue::Address(String::from("KT1DrZokUnBg35YANi5sQxGfyWgDSAJRfJqY")),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(-1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 1
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Address(String::from("KT1DrZokUnBg35YANi5sQxGfyWgDSAJRfJqY")),
+                Instruction::INIT,
+            ),
+            StackElement::new(
+                MValue::Address(String::from("tz1Me1MGhK7taay748h4gPnX2cXvbgL6xsYL")),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // comparing 2 implicit account addresses
+        // should output -1
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Address(String::from("tz1Me1MGhK7taay748h4gPnX2cXvbgL6xsYL")),
+                Instruction::INIT,
+            ),
+            StackElement::new(
+                MValue::Address(String::from("tz1NhNv9g7rtcjyNsH8Zqu79giY5aTqDDrzB")),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(-1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 0
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Address(String::from("tz1Me1MGhK7taay748h4gPnX2cXvbgL6xsYL")),
+                Instruction::INIT,
+            ),
+            StackElement::new(
+                MValue::Address(String::from("tz1Me1MGhK7taay748h4gPnX2cXvbgL6xsYL")),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(0));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 1
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Address(String::from("tz1NhNv9g7rtcjyNsH8Zqu79giY5aTqDDrzB")),
+                Instruction::INIT,
+            ),
+            StackElement::new(
+                MValue::Address(String::from("tz1Me1MGhK7taay748h4gPnX2cXvbgL6xsYL")),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // comparing 2 contract addresses
+        // should output -1
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Address(String::from("KT1DrZokUnBg35YANi5sQxGfyWgDSAJRfJqY")),
+                Instruction::INIT,
+            ),
+            StackElement::new(
+                MValue::Address(String::from("KT1X1LgNkQShpF9nRLYw3Dgdy4qp38MX617z")),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(-1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 0
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Address(String::from("KT1X1LgNkQShpF9nRLYw3Dgdy4qp38MX617z")),
+                Instruction::INIT,
+            ),
+            StackElement::new(
+                MValue::Address(String::from("KT1X1LgNkQShpF9nRLYw3Dgdy4qp38MX617z")),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(0));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 1
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Address(String::from("KT1X1LgNkQShpF9nRLYw3Dgdy4qp38MX617z")),
+                Instruction::INIT,
+            ),
+            StackElement::new(
+                MValue::Address(String::from("KT1DrZokUnBg35YANi5sQxGfyWgDSAJRfJqY")),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+    }
 
     // COMPARES BOOLEANS
+    #[test]
+    fn compare_bool_bool() {
+        // should output -1
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Bool(false), Instruction::INIT),
+            StackElement::new(MValue::Bool(true), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(-1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 0
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Bool(false), Instruction::INIT),
+            StackElement::new(MValue::Bool(false), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(0));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 1
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Bool(true), Instruction::INIT),
+            StackElement::new(MValue::Bool(false), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+    }
 
     // COMPARES UNITS
+    #[test]
+    fn compare_unit_unit() {
+        // should output 0
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Unit, Instruction::INIT),
+            StackElement::new(MValue::Unit, Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(0));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+    }
 
     // COMPARES PAIRS
 
     // COMPARES OPTIONS
 
     // COMPARES UNIONS
+
+    // COMPARES DIFFERENT TYPES
+    #[test]
+    fn compare_different_types() {
+        // should generate an error
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Unit, Instruction::INIT),
+            StackElement::new(MValue::Bool(true), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, String::from("Unit and Bool(true) are not comparable")),
+            Ok(_) => assert!(false),
+        }
+
+        // should generate an error
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::String(String::from("KT1X1LgNkQShpF9nRLYw3Dgdy4qp38MX617z")), Instruction::INIT),
+            StackElement::new(MValue::Address(String::from("KT1X1LgNkQShpF9nRLYw3Dgdy4qp38MX617z")), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => 
+                assert_eq!(err, String::from("String(\"KT1X1LgNkQShpF9nRLYw3Dgdy4qp38MX617z\") and Address(\"KT1X1LgNkQShpF9nRLYw3Dgdy4qp38MX617z\") are not comparable")),
+            Ok(_) => assert!(false),
+        }
+
+        // should generate an error
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+            StackElement::new(MValue::Int(6), Instruction::INIT),
+            StackElement::new(MValue::Nat(667), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => 
+                assert_eq!(err, String::from("Nat(6) and Int(6) are not comparable")),
+            Ok(_) => assert!(false),
+        }
+    }
 
     // COMPARES UNCOMPARABLE TYPES
 
