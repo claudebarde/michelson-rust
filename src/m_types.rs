@@ -109,6 +109,19 @@ pub struct PairValue {
     pub value: Box<(MValue, MValue)>,
 }
 
+impl PairValue {
+    pub fn new(val1: MValue, val2: MValue) -> MValue {
+        MValue::Pair(PairValue {
+            m_type: (val1.get_type(), val2.get_type()),
+            value: Box::new((val1, val2)),
+        })
+    }
+
+    pub fn unpair(&self) -> (MValue, MValue) {
+        *self.value.clone()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct CollectionValue {
     pub m_type: MType,

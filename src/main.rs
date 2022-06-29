@@ -7,7 +7,6 @@ mod instructions;
 mod m_types;
 mod parser;
 mod stack;
-mod utils;
 use instructions::Instruction;
 use m_types::{or, MType, MValue, Or, OrValue, PairValue};
 use stack::{Stack, StackElement, StackSnapshots};

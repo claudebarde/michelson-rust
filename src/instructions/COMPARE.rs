@@ -112,9 +112,9 @@ pub fn run(
                 ) {
                     (Ok(val_1), Ok(val_2)) => {
                         if let MValue::Int(_val @ 0) = val_1 {
-                            Ok(val_1)
-                        } else {
                             Ok(val_2)
+                        } else {
+                            Ok(val_1)
                         }
                     }
                     (Ok(_), Err(err)) => Err(err),
@@ -182,7 +182,7 @@ pub fn run(
 mod tests {
     use super::*;
     use crate::instructions::RunOptionsContext;
-    use crate::m_types::timestamp;
+    use crate::m_types::{MType, timestamp, OptionValue, PairValue};
     use std::time::{SystemTime, UNIX_EPOCH};
 
     // PASSING
@@ -904,9 +904,271 @@ mod tests {
         }
     }
 
-    // COMPARES PAIRS
-
     // COMPARES OPTIONS
+    #[test]
+    fn compare_option_option() {
+        // should output -1
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Option(OptionValue { m_type: MType::Int, value: Box::new(None) }), Instruction::INIT),
+            StackElement::new(MValue::Option(OptionValue { m_type: MType::Int, value: Box::new(Some(MValue::Int(9))) }), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(-1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 1
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Option(OptionValue { m_type: MType::Int, value: Box::new(Some(MValue::Int(9))) }), Instruction::INIT),
+            StackElement::new(MValue::Option(OptionValue { m_type: MType::Int, value: Box::new(None) }), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 0
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Option(OptionValue { m_type: MType::Int, value: Box::new(None) }), Instruction::INIT),
+            StackElement::new(MValue::Option(OptionValue { m_type: MType::Int, value: Box::new(None) }), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(0));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 0
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Option(OptionValue { m_type: MType::Int, value: Box::new(Some(MValue::Int(9))) }), Instruction::INIT),
+            StackElement::new(MValue::Option(OptionValue { m_type: MType::Int, value: Box::new(Some(MValue::Int(9))) }), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(0));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 1
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Option(OptionValue { m_type: MType::Int, value: Box::new(Some(MValue::Int(19))) }), Instruction::INIT),
+            StackElement::new(MValue::Option(OptionValue { m_type: MType::Int, value: Box::new(Some(MValue::Int(9))) }), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+    }
+
+    // COMPARES PAIRS
+    #[test]
+    fn compare_pair_pair() {
+        // should output 0
+        let initial_stack: Stack = vec![
+            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(0));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output -1
+        let initial_stack: Stack = vec![
+            StackElement::new(PairValue::new(MValue::Int(8), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(-1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 1
+        let initial_stack: Stack = vec![
+            StackElement::new(PairValue::new(MValue::Int(18), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 1
+        let initial_stack: Stack = vec![
+            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("taquito"))), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output -1
+        let initial_stack: Stack = vec![
+            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("taquito"))), Instruction::INIT),
+            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(-1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+    }
 
     // COMPARES UNIONS
 
@@ -985,7 +1247,6 @@ mod tests {
         }
     }
 
-    // COMPARES UNCOMPARABLE TYPES
-
     // FAILING
+    // COMPARES UNCOMPARABLE TYPES
 }

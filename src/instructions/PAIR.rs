@@ -1,7 +1,6 @@
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::MValue;
+use crate::m_types::{MValue, PairValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
-use crate::utils::pair;
 
 // https://tezos.gitlab.io/michelson-reference/#instr-PAIR
 
@@ -15,7 +14,7 @@ pub fn run(
         Ok(_) => {
             // TODO: make pair work with an argument
             // creates the new pair
-            let new_pair: MValue = pair::pair(
+            let new_pair: MValue = PairValue::new(
                 stack[options.pos].value.clone(),
                 stack[options.pos + 1].value.clone(),
             );
