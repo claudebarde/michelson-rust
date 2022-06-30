@@ -103,6 +103,35 @@ pub struct OrValue {
     pub value: Box<Or>,
 }
 
+impl OrValue {
+    pub fn new(val: Or, types: (MType, MType)) -> OrValue {
+        let (left_type, right_type) = types.clone();
+
+        OrValue {
+            m_type: types,
+            value: {
+                // checks the type matches the value
+                match &val {
+                    Or::Left(left_val) => {
+                        if left_val.get_type() == left_type {
+                            Box::new(val)
+                        } else {
+                            panic!("Left value doesn't match its provided type for new OrValue")
+                        }
+                    }
+                    Or::Right(right_val) => {
+                        if right_val.get_type() == right_type {
+                            Box::new(val)
+                        } else {
+                            panic!("Right value doesn't match its provided type for new OrValue")
+                        }
+                    }
+                }
+            },
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PairValue {
     pub m_type: (MType, MType),

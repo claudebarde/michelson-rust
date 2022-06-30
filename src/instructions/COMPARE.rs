@@ -182,7 +182,7 @@ pub fn run(
 mod tests {
     use super::*;
     use crate::instructions::RunOptionsContext;
-    use crate::m_types::{MType, timestamp, OptionValue, PairValue};
+    use crate::m_types::{MType, timestamp, OptionValue, PairValue, OrValue, Or};
     use std::time::{SystemTime, UNIX_EPOCH};
 
     // PASSING
@@ -1171,7 +1171,155 @@ mod tests {
     }
 
     // COMPARES UNIONS
+    #[test]
+    fn compare_union_union() {
+        // should output 0
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Or(OrValue::new(Or::Left(MValue::Int(3)), (MType::Int, MType::Nat))), Instruction::INIT),
+            StackElement::new(MValue::Or(OrValue::new(Or::Left(MValue::Int(3)), (MType::Int, MType::Nat))), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
 
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(0));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output -1
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Or(OrValue::new(Or::Left(MValue::Int(3)), (MType::Int, MType::Nat))), Instruction::INIT),
+            StackElement::new(MValue::Or(OrValue::new(Or::Right(MValue::Nat(3)), (MType::Int, MType::Nat))), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(-1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 1
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Or(OrValue::new(Or::Right(MValue::Nat(3)), (MType::Int, MType::Nat))), Instruction::INIT),
+            StackElement::new(MValue::Or(OrValue::new(Or::Left(MValue::Int(3)), (MType::Int, MType::Nat))), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output 1
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Or(OrValue::new(Or::Left(MValue::Int(33)), (MType::Int, MType::Nat))), Instruction::INIT),
+            StackElement::new(MValue::Or(OrValue::new(Or::Left(MValue::Int(3)), (MType::Int, MType::Nat))), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+
+        // should output -1
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Or(OrValue::new(Or::Left(MValue::Int(3)), (MType::Int, MType::Nat))), Instruction::INIT),
+            StackElement::new(MValue::Or(OrValue::new(Or::Left(MValue::Int(33)), (MType::Int, MType::Nat))), Instruction::INIT),
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                assert_eq!(stack[0].value, MValue::Int(-1));
+                assert_eq!(stack[0].instruction, Instruction::COMPARE);
+                assert_eq!(stack[1].value, MValue::Nat(6));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+    }
+
+    // FAILING
     // COMPARES DIFFERENT TYPES
     #[test]
     fn compare_different_types() {
@@ -1247,6 +1395,31 @@ mod tests {
         }
     }
 
-    // FAILING
     // COMPARES UNCOMPARABLE TYPES
+    #[test]
+    #[should_panic(expected = "Operation(\"test\") and Operation(\"test2\") are not comparable")]
+    fn compare_operation_operation() {
+        // TODO: operation value hasn't been implemented yet
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Operation(String::from("test")), Instruction::INIT),
+            StackElement::new(MValue::Operation(String::from("test2")), Instruction::INIT),
+            StackElement::new(MValue::Nat(667), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => panic!("{}", err),
+            Ok(_) => assert!(false),
+        }
+    }
 }
