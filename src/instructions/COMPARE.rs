@@ -2,7 +2,6 @@ use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{AddressType, MValue, Or};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use std::cmp::Ordering;
-use std::fmt::format;
 
 // https://tezos.gitlab.io/michelson-reference/#instr-COMPARE
 

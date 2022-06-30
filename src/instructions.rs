@@ -6,7 +6,13 @@ mod ABS;
 mod ADD;
 mod COMPARE;
 mod DROP;
+mod EQ;
+mod GE;
+mod GT;
 mod IF_LEFT;
+mod LE;
+mod LT;
+mod NEQ;
 mod NIL;
 mod PAIR;
 mod PUSH;
@@ -21,7 +27,13 @@ pub enum Instruction {
     ABS,
     COMPARE,
     DROP,
+    EQ,
     IF_LEFT,
+    GE,
+    GT,
+    LE,
+    LT,
+    NEQ,
     NIL,
     PAIR,
     PUSH,
@@ -53,7 +65,13 @@ impl Instruction {
             "ABS" => Ok(Instruction::ABS),
             "COMPARE" => Ok(Instruction::COMPARE),
             "DROP" => Ok(Instruction::DROP),
+            "EQ" => Ok(Instruction::EQ),
             "IF_LEFT" => Ok(Instruction::IF_LEFT),
+            "GE" => Ok(Instruction::GE),
+            "GT" => Ok(Instruction::GT),
+            "LE" => Ok(Instruction::LE),
+            "LT" => Ok(Instruction::LT),
+            "NEQ" => Ok(Instruction::NEQ),
             "NIL" => Ok(Instruction::NIL),
             "PAIR" => Ok(Instruction::PAIR),
             "PUSH" => Ok(Instruction::PUSH),
@@ -78,7 +96,13 @@ impl Instruction {
             Instruction::ADD => ADD::run(initial_stack, options, stack_snapshots),
             Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),
+            Instruction::EQ => EQ::run(initial_stack, options, stack_snapshots),
             Instruction::IF_LEFT => IF_LEFT::run(initial_stack, args, options, stack_snapshots),
+            Instruction::GE => GE::run(initial_stack, options, stack_snapshots),
+            Instruction::GT => GT::run(initial_stack, options, stack_snapshots),
+            Instruction::LE => LE::run(initial_stack, options, stack_snapshots),
+            Instruction::LT => LT::run(initial_stack, options, stack_snapshots),
+            Instruction::NEQ => NEQ::run(initial_stack, options, stack_snapshots),
             Instruction::NIL => NIL::run(initial_stack, args, options, stack_snapshots),
             Instruction::PAIR => PAIR::run(initial_stack, options, stack_snapshots),
             Instruction::PUSH => PUSH::run(initial_stack, args, options, stack_snapshots),
