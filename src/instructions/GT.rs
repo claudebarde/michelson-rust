@@ -27,7 +27,7 @@ pub fn run(
                 }
             };
             // creates the new stack
-            let new_stack = stack.insert_instead(
+            let new_stack = stack.replace(
                 vec![StackElement::new(new_val, Instruction::GT)],
                 options.pos,
             );

@@ -162,7 +162,7 @@ pub fn run(
     // removes the 2 elements being compared from the stack
     let (_, new_stack) = stack.remove_at(options.pos);
     // pushes the new element to the stack
-    let new_stack = new_stack.insert_instead(
+    let new_stack = new_stack.replace(
         vec![StackElement::new(new_val, Instruction::COMPARE)],
         options.pos,
     );

@@ -12,23 +12,21 @@ use m_types::{or, MType, MValue, Or, OrValue, PairValue};
 use stack::{Stack, StackElement, StackSnapshots};
 
 fn main() {
-    let michelson_code = r#"
+    /* let michelson_code = r#"
         UNPAIR ;
         IF_LEFT { IF_LEFT { SWAP ; SUB } { ADD } } { DROP 2 ; PUSH int 0 } ;
         NIL operation ;
         PAIR
-    "#;
-    /*
-        UNPAIR ;
-         PUSH mutez 0 ;
-         AMOUNT ;
-         COMPARE ;
-         NEQ ;
-         IF { DROP 2 ; PUSH string "NO_AMOUNT_EXPECTED" ; FAILWITH }
-            { IF_LEFT { IF_LEFT { SWAP ; SUB } { ADD } } { DROP 2 ; PUSH int 0 } ;
-              NIL operation ;
-              PAIR }
-    */
+    "#; */
+    let michelson_code = r#"
+    UNPAIR ;
+    PUSH mutez 0 ;
+    AMOUNT ;
+    COMPARE ;
+    NEQ ;
+    IF { DROP 2 ; PUSH string "NO_AMOUNT_EXPECTED" ; FAILWITH }
+        { IF_LEFT { IF_LEFT { SWAP ; SUB } { ADD } } { DROP 2 ; PUSH int 0 } ; NIL operation ; PAIR }"#;
+
     let parsed_michelson = parser::parse(String::from(michelson_code));
     // println!("{:#?}", parsed_michelson);
     let parsed_json = match parsed_michelson {
@@ -36,7 +34,7 @@ fn main() {
         Err((err, _)) => panic!("{}", err),
     };
     // println!("{:?}", parsed_json.clone().unwrap());
-    let run_result: Result<(Stack, StackSnapshots), String> = match parsed_json {
+    let run_result: Result<(Stack, StackSnapshots, bool), String> = match parsed_json {
         Ok(json) => {
             // (or (or (int %decrement) (int %increment)) (unit %reset))
             // addition params
@@ -79,7 +77,12 @@ fn main() {
         }
         Err(err) => panic!("{}", err),
     };
-    let (new_stack, stack_snapshots) = run_result.unwrap();
+    let (new_stack, stack_snapshots, has_failed) = run_result.unwrap();
+    if has_failed {
+        println!("\nContract failed!");
+    } else {
+        println!("\nContract successfully executed!");
+    }
     println!("\nNew stack: {:#?}", new_stack);
     println!("Number of elements in the stack: {}", new_stack.len());
     // println!("{:#?}", stack_snapshots);

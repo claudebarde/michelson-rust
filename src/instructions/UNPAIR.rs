@@ -51,7 +51,7 @@ pub fn run(
     let stack_el1 = StackElement::new(el1, Instruction::UNPAIR);
     let stack_el2 = StackElement::new(el2, Instruction::UNPAIR);
     let els_to_insert = vec![stack_el1, stack_el2];
-    let new_stack = stack.clone().insert_instead(els_to_insert, options.pos);
+    let new_stack = stack.clone().replace(els_to_insert, options.pos);
     // updates the stack snapshots
     stack_snapshots.push(new_stack.clone());
     Ok((new_stack, stack_snapshots))

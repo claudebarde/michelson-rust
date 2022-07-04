@@ -1,6 +1,6 @@
 use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{MType, MValue, nat};
+use crate::m_types::{nat, MType, MValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 
 // https://tezos.gitlab.io/michelson-reference/#instr-ABS
@@ -20,19 +20,21 @@ pub fn run(
         MValue::Int(val) => {
             let new_nat = val.abs() as nat;
             Ok(MValue::Nat(new_nat))
-        },
-        _ => Err(display_error(ErrorCode::InvalidType(
-            (MType::Int, stack[options.pos].value.get_type(), Instruction::ABS)
-        )))
+        }
+        _ => Err(display_error(ErrorCode::InvalidType((
+            MType::Int,
+            stack[options.pos].value.get_type(),
+            Instruction::ABS,
+        )))),
     };
 
     match new_val_res {
         Err(err) => Err(err),
         Ok(new_val) => {
-            let new_stack = 
-                stack.insert_instead(
-                    vec![StackElement::new(new_val, Instruction::ABS)], 
-                    options.pos);
+            let new_stack = stack.replace(
+                vec![StackElement::new(new_val, Instruction::ABS)],
+                options.pos,
+            );
             stack_snapshots.push(new_stack.clone());
             Ok((new_stack, stack_snapshots))
         }
@@ -140,7 +142,9 @@ mod tests {
     // FAILING
     // empty stack
     #[test]
-    #[should_panic(expected = "Unexpected stack length, expected a length of 1 for instruction ABS, got 0")]
+    #[should_panic(
+        expected = "Unexpected stack length, expected a length of 1 for instruction ABS, got 0"
+    )]
     fn abs_empty_stack() {
         let initial_stack: Stack = vec![];
         let stack_snapshots = vec![];
@@ -157,15 +161,20 @@ mod tests {
 
         match run(initial_stack, &options, stack_snapshots) {
             Err(err) => panic!("{}", err),
-            Ok(_) => assert!(false)
+            Ok(_) => assert!(false),
         }
     }
 
     // stack not deep enough
     #[test]
-    #[should_panic(expected = "Unexpected stack length, expected a length of 2 for instruction ABS, got 1")]
+    #[should_panic(
+        expected = "Unexpected stack length, expected a length of 2 for instruction ABS, got 1"
+    )]
     fn abs_stack_not_deep_enough() {
-        let initial_stack: Stack = vec![StackElement::new(MValue::Mutez(7_000_000), Instruction::INIT)];
+        let initial_stack: Stack = vec![StackElement::new(
+            MValue::Mutez(7_000_000),
+            Instruction::INIT,
+        )];
         let stack_snapshots = vec![];
         let options = RunOptions {
             context: RunOptionsContext {
@@ -180,7 +189,7 @@ mod tests {
 
         match run(initial_stack, &options, stack_snapshots) {
             Err(err) => panic!("{}", err),
-            Ok(_) => assert!(false)
+            Ok(_) => assert!(false),
         }
     }
 
@@ -188,7 +197,10 @@ mod tests {
     #[test]
     #[should_panic(expected = "Invalid type for `ABS` expected Int, but got Mutez")]
     fn abs_wrong_type() {
-        let initial_stack: Stack = vec![StackElement::new(MValue::Mutez(7_000_000), Instruction::INIT)];
+        let initial_stack: Stack = vec![StackElement::new(
+            MValue::Mutez(7_000_000),
+            Instruction::INIT,
+        )];
         let stack_snapshots = vec![];
         let options = RunOptions {
             context: RunOptionsContext {
@@ -203,7 +215,7 @@ mod tests {
 
         match run(initial_stack, &options, stack_snapshots) {
             Err(err) => panic!("{}", err),
-            Ok(_) => assert!(false)
+            Ok(_) => assert!(false),
         }
     }
 }

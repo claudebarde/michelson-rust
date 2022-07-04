@@ -26,7 +26,7 @@ pub trait StackFuncs {
     /// Helper function to insert one or multiple stack elements
     /// at a given position in the stack
     /// It removes the element currently at the specified index
-    fn insert_instead(&self, els_to_insert: Vec<StackElement>, index: usize) -> Stack;
+    fn replace(&self, els_to_insert: Vec<StackElement>, index: usize) -> Stack;
     /// Helper function to insert one or multiple elements
     /// at a given position in the stack
     /// It keeps all the elements in the stack and shifts their position
@@ -41,7 +41,7 @@ pub trait StackFuncs {
 impl StackFuncs for Stack {
     /// Helper function to insert one or multiple stack elements
     /// at a given position in the stack
-    fn insert_instead(&self, els_to_insert: Vec<StackElement>, index: usize) -> Stack {
+    fn replace(&self, els_to_insert: Vec<StackElement>, index: usize) -> Stack {
         let mut stack_start = self.clone();
         let mut vec_tail = stack_start.split_off(index);
         // reverses the vector order to remove the first element

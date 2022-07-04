@@ -13,7 +13,7 @@ pub fn run(
     args: Option<&Vec<Value>>,
     options: &RunOptions,
     mut stack_snapshots: StackSnapshots,
-) -> Result<(Stack, StackSnapshots), String> {
+) -> Result<(Stack, StackSnapshots, bool), String> {
     // checks the stack
     match stack.check_depth(1, Instruction::IF_LEFT) {
         Ok(_) => (),
@@ -54,7 +54,7 @@ pub fn run(
         }
         _ => Err(display_error(ErrorCode::WrongType((
             String::from("or"),
-            MValue::to_string(&stack[options.pos].value),
+            stack[options.pos].value.to_string(),
         )))),
     }
 }

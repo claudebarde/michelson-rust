@@ -10,6 +10,7 @@ mod DROP;
 mod EQ;
 mod GE;
 mod GT;
+mod IF;
 mod IF_LEFT;
 mod LE;
 mod LT;
@@ -30,6 +31,8 @@ pub enum Instruction {
     COMPARE,
     DROP,
     EQ,
+    FAILWITH,
+    IF,
     IF_LEFT,
     GE,
     GT,
@@ -69,6 +72,7 @@ impl Instruction {
             "COMPARE" => Ok(Instruction::COMPARE),
             "DROP" => Ok(Instruction::DROP),
             "EQ" => Ok(Instruction::EQ),
+            "IF" => Ok(Instruction::IF),
             "IF_LEFT" => Ok(Instruction::IF_LEFT),
             "GE" => Ok(Instruction::GE),
             "GT" => Ok(Instruction::GT),
@@ -101,7 +105,24 @@ impl Instruction {
             Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),
             Instruction::EQ => EQ::run(initial_stack, options, stack_snapshots),
-            Instruction::IF_LEFT => IF_LEFT::run(initial_stack, args, options, stack_snapshots),
+            Instruction::IF => {
+                match IF::run(initial_stack, args, options, stack_snapshots) {
+                    // the boolean value is not necessary here
+                    Ok((new_stack, new_stack_snaposhots, _)) => {
+                        Ok((new_stack, new_stack_snaposhots))
+                    }
+                    Err(err) => Err(err),
+                }
+            }
+            Instruction::IF_LEFT => {
+                match IF_LEFT::run(initial_stack, args, options, stack_snapshots) {
+                    // the boolean value is not necessary here
+                    Ok((new_stack, new_stack_snaposhots, _)) => {
+                        Ok((new_stack, new_stack_snaposhots))
+                    }
+                    Err(err) => Err(err),
+                }
+            }
             Instruction::GE => GE::run(initial_stack, options, stack_snapshots),
             Instruction::GT => GT::run(initial_stack, options, stack_snapshots),
             Instruction::LE => LE::run(initial_stack, options, stack_snapshots),

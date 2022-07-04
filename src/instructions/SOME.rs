@@ -21,7 +21,7 @@ pub fn run(
         value: Box::new(Option::Some(val_to_wrap)),
     });
     // updates the stack
-    let new_stack = stack.insert_instead(
+    let new_stack = stack.replace(
         vec![StackElement::new(new_val, Instruction::SOME)],
         options.pos,
     );

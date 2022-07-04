@@ -17,7 +17,7 @@ Available instructions (implemented and tested):
 - [x] GE
 - [x] GT
 - [ ] GET
-- [ ] IF
+- [x] IF
 - [x] IF_LEFT
 - [ ] IFCMP\*
 - [ ] IF_NONE
