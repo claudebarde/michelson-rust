@@ -26,6 +26,13 @@ struct ParsedCondition {
     new_code: String
 }
 
+#[derive(Debug)]
+pub struct RunResult {
+    pub stack: Stack,
+    pub stack_snapshots: Vec<Stack>,
+    pub has_failed: bool,
+}
+
 fn parse_conditions(code: &str) -> Result<ParsedCondition, String> {
     // iterates through the string to find curly braces
     let mut opening_curly_braces = 0;
@@ -404,7 +411,7 @@ pub fn to_json(ast: &Vec<ParsedCode>) -> Result<String, String> {
 }
 
 /// runs JSON Michelson code provided a parameter value and a storage
-pub fn run(json: &str, mut stack: Stack, mut stack_snapshots: StackSnapshots) -> Result<(Stack, StackSnapshots, bool), String> {    
+pub fn run(json: &str, mut stack: Stack, mut stack_snapshots: StackSnapshots) -> Result<RunResult, String> {    
     // sets default options
     let options = RunOptions {
         context: RunOptionsContext {
@@ -454,7 +461,11 @@ pub fn run(json: &str, mut stack: Stack, mut stack_snapshots: StackSnapshots) ->
             }
         }
 
-        Ok((stack, stack_snapshots, failed))
+        Ok(RunResult {
+            stack,
+            stack_snapshots,
+            has_failed: failed
+        })
     } else {
         Err(String::from("Unexpected type output for JSON value, expected an array"))
     }

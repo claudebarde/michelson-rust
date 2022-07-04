@@ -19,6 +19,13 @@ pub enum AddressType {
     Contract,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Ticket {
+    amount: u128,
+    value: MValue,
+    ticketer: address,
+}
+
 pub enum Never {}
 
 pub type unit = ();
@@ -60,6 +67,7 @@ pub enum MType {
     Timestamp,
     Address,
     Operation,
+    Ticket,
     Option(Box<MType>),
     Or(Box<(MType, MType)>),
     Pair(Box<(MType, MType)>),
@@ -86,6 +94,7 @@ impl MType {
             "timestamp" => Ok(MType::Timestamp),
             "address" => Ok(MType::Address),
             "operation" => Ok(MType::Operation),
+            "ticket" => Ok(MType::Ticket),
             _ => Err(String::from(format!("Unknown type '{}'", str))),
         }
     }
@@ -196,6 +205,7 @@ pub enum MValue {
     Timestamp(timestamp),
     Address(address),
     Operation(operation),
+    Ticket(Box<Ticket>),
     Option(OptionValue),
     Or(OrValue),
     Pair(PairValue),
@@ -222,6 +232,7 @@ impl MValue {
             MValue::Timestamp(_) => String::from("timestamp"),
             MValue::Address(_) => String::from("address"),
             MValue::Operation(_) => String::from("operation"),
+            MValue::Ticket(_) => String::from("ticket"),
             MValue::Option(_) => String::from("option"),
             MValue::Or(_) => String::from("or"),
             MValue::Pair(_) => String::from("pair"),
@@ -248,6 +259,7 @@ impl MValue {
             MValue::Timestamp(_) => MType::Timestamp,
             MValue::Address(_) => MType::Address,
             MValue::Operation(_) => MType::Operation,
+            MValue::Ticket(_) => MType::Ticket,
             MValue::Option(val) => MType::Option(Box::new(val.m_type.clone())),
             MValue::Or(val) => MType::Or(Box::new(val.m_type.clone())),
             MValue::Pair(val) => MType::Pair(Box::new(val.m_type.clone())),

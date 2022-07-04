@@ -13,7 +13,7 @@ pub fn run(
     args: Option<&Vec<Value>>,
     options: &RunOptions,
     mut stack_snapshots: StackSnapshots,
-) -> Result<(Stack, StackSnapshots, bool), String> {
+) -> Result<parser::RunResult, String> {
     // checks the stack
     match stack.check_depth(1, Instruction::IF_LEFT) {
         Ok(_) => (),

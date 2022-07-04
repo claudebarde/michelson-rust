@@ -26,7 +26,7 @@ pub fn run(
                 if arg.is_object() && arg.get("int").is_some() {
                     // gets the int value that will be stored as a string
                     match arg.get("int").unwrap().as_str() {
-                        None => Err(String::from("Expected a String in JSON value for DROP")),
+                        None => Err(String::from("Expected a string in JSON value for DROP")),
                         Some(str) =>
                         // parse the string into a number
                         {

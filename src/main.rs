@@ -9,6 +9,7 @@ mod parser;
 mod stack;
 use instructions::Instruction;
 use m_types::{or, MType, MValue, Or, OrValue, PairValue};
+use parser::RunResult;
 use stack::{Stack, StackElement, StackSnapshots};
 
 fn main() {
@@ -34,7 +35,7 @@ fn main() {
         Err((err, _)) => panic!("{}", err),
     };
     // println!("{:?}", parsed_json.clone().unwrap());
-    let run_result: Result<(Stack, StackSnapshots, bool), String> = match parsed_json {
+    let run_result: Result<RunResult, String> = match parsed_json {
         Ok(json) => {
             // (or (or (int %decrement) (int %increment)) (unit %reset))
             // addition params
@@ -77,16 +78,22 @@ fn main() {
         }
         Err(err) => panic!("{}", err),
     };
-    let (new_stack, stack_snapshots, has_failed) = run_result.unwrap();
-    if has_failed {
+    let run_result = run_result.unwrap();
+    if run_result.has_failed {
         println!("\nContract failed!");
     } else {
         println!("\nContract successfully executed!");
     }
-    println!("\nNew stack: {:#?}", new_stack);
-    println!("Number of elements in the stack: {}", new_stack.len());
+    println!("\nNew stack: {:#?}", run_result.stack);
+    println!(
+        "Number of elements in the stack: {}",
+        run_result.stack.len()
+    );
     // println!("{:#?}", stack_snapshots);
-    println!("Number of stack snapshots: {}", stack_snapshots.len());
+    println!(
+        "Number of stack snapshots: {}",
+        run_result.stack_snapshots.len()
+    );
     /*let michelson_code = r#"
         ## Checks if amount is equal to zero
         AMOUNT ;

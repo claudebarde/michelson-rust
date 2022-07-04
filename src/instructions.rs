@@ -7,6 +7,7 @@ mod ADD;
 mod AMOUNT;
 mod COMPARE;
 mod DROP;
+mod DUP;
 mod EQ;
 mod GE;
 mod GT;
@@ -30,6 +31,7 @@ pub enum Instruction {
     AMOUNT,
     COMPARE,
     DROP,
+    DUP,
     EQ,
     FAILWITH,
     IF,
@@ -71,6 +73,7 @@ impl Instruction {
             "AMOUNT" => Ok(Instruction::AMOUNT),
             "COMPARE" => Ok(Instruction::COMPARE),
             "DROP" => Ok(Instruction::DROP),
+            "DUP" => Ok(Instruction::DUP),
             "EQ" => Ok(Instruction::EQ),
             "IF" => Ok(Instruction::IF),
             "IF_LEFT" => Ok(Instruction::IF_LEFT),
@@ -104,22 +107,19 @@ impl Instruction {
             Instruction::AMOUNT => AMOUNT::run(initial_stack, options, stack_snapshots),
             Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),
+            Instruction::DUP => DUP::run(initial_stack, args, options, stack_snapshots),
             Instruction::EQ => EQ::run(initial_stack, options, stack_snapshots),
             Instruction::IF => {
                 match IF::run(initial_stack, args, options, stack_snapshots) {
-                    // the boolean value is not necessary here
-                    Ok((new_stack, new_stack_snaposhots, _)) => {
-                        Ok((new_stack, new_stack_snaposhots))
-                    }
+                    // the boolean value in RunResult is not necessary here
+                    Ok(run_result) => Ok((run_result.stack, run_result.stack_snapshots)),
                     Err(err) => Err(err),
                 }
             }
             Instruction::IF_LEFT => {
                 match IF_LEFT::run(initial_stack, args, options, stack_snapshots) {
-                    // the boolean value is not necessary here
-                    Ok((new_stack, new_stack_snaposhots, _)) => {
-                        Ok((new_stack, new_stack_snaposhots))
-                    }
+                    // the boolean value in RunResult is not necessary here
+                    Ok(run_result) => Ok((run_result.stack, run_result.stack_snapshots)),
                     Err(err) => Err(err),
                 }
             }
