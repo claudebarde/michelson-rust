@@ -11,7 +11,7 @@ Available instructions (implemented and tested):
 - [ ] DIG
 - [ ] DIP
 - [x] DROP
-- [ ] DUP
+- [x] DUP
 - [x] EQ
 - [ ] FAILWITH
 - [x] GE
