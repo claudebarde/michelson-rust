@@ -6,6 +6,7 @@ mod ABS;
 mod ADD;
 mod AMOUNT;
 mod COMPARE;
+mod DIG;
 mod DROP;
 mod DUP;
 mod EQ;
@@ -30,6 +31,7 @@ pub enum Instruction {
     ABS,
     AMOUNT,
     COMPARE,
+    DIG,
     DROP,
     DUP,
     EQ,
@@ -72,6 +74,7 @@ impl Instruction {
             "ABS" => Ok(Instruction::ABS),
             "AMOUNT" => Ok(Instruction::AMOUNT),
             "COMPARE" => Ok(Instruction::COMPARE),
+            "DIG" => Ok(Instruction::DIG),
             "DROP" => Ok(Instruction::DROP),
             "DUP" => Ok(Instruction::DUP),
             "EQ" => Ok(Instruction::EQ),
@@ -106,6 +109,7 @@ impl Instruction {
             Instruction::ADD => ADD::run(initial_stack, options, stack_snapshots),
             Instruction::AMOUNT => AMOUNT::run(initial_stack, options, stack_snapshots),
             Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
+            Instruction::DIG => DIG::run(initial_stack, args, options, stack_snapshots),
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),
             Instruction::DUP => DUP::run(initial_stack, args, options, stack_snapshots),
             Instruction::EQ => EQ::run(initial_stack, options, stack_snapshots),

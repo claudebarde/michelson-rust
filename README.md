@@ -11,9 +11,10 @@ Available instructions (implemented and tested):
 - [ ] DIG
 - [ ] DIP
 - [x] DROP
+- [ ] DUG
 - [x] DUP
 - [x] EQ
-- [ ] FAILWITH
+- [x] FAILWITH
 - [x] GE
 - [x] GT
 - [ ] GET

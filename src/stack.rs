@@ -17,6 +17,10 @@ impl StackElement {
     pub fn get_val(&self) -> MValue {
         self.value.clone()
     }
+
+    pub fn change_instruction(self, instruction: Instruction) -> StackElement {
+        StackElement::new(self.value, instruction)
+    }
 }
 
 pub type Stack = Vec<StackElement>;

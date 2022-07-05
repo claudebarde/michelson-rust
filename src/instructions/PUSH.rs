@@ -15,7 +15,7 @@ pub fn run(
     // checking the stack is not required
     // checks that the arguments are correct
     let new_stack_element: Result<StackElement, String> = match args {
-        None => Err(display_error(ErrorCode::NoArgument(String::from("PUSH")))),
+        None => Err(display_error(ErrorCode::NoArgument(Instruction::PUSH))),
         Some(arg) => {
             // argument must be a vector of 2 elements
             if arg.len() == 2 {

@@ -21,9 +21,19 @@ pub enum AddressType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ticket {
-    amount: u128,
+    amount: nat,
     value: MValue,
     ticketer: address,
+}
+
+impl Ticket {
+    pub fn new(amount: nat, value: MValue, ticketer: address) -> Ticket {
+        Ticket {
+            amount,
+            value,
+            ticketer,
+        }
+    }
 }
 
 pub enum Never {}

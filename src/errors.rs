@@ -6,7 +6,7 @@ pub enum ErrorCode {
     InvalidMutez(mutez),
     InvalidNat(nat),
     InvalidArgument((String, String)),
-    NoArgument(String),
+    NoArgument(Instruction),
     Noop(String),
     StackNotDeepEnough((usize, usize, Instruction)),
     UnexpectedArgsNumber((usize, usize)),
@@ -33,14 +33,15 @@ pub fn display_error(error_code: ErrorCode) -> String {
         ErrorCode::InvalidMutez(val) => format!("Invalid mutez value {}", val),
         ErrorCode::Noop(val) => format!("Noop performed: {}", val),
         ErrorCode::NoArgument(instruction) => {
-            format!("No argument provided for the {} instruction", instruction)
+            format!("No argument provided for the {:?} instruction", instruction)
         }
         ErrorCode::InvalidArgument((expected, got)) => format!(
             "Invalid argument provided, expected `{}`, but got `{}`",
             expected, got
         ),
         ErrorCode::InvalidType((expected, got, instruction)) => format!(
-            "Invalid type for `{:?}` expected {:?}, but got {:?}", instruction, expected, got
-        )
+            "Invalid type for `{:?}` expected {:?}, but got {:?}",
+            instruction, expected, got
+        ),
     }
 }
