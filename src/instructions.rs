@@ -24,6 +24,7 @@ mod PAIR;
 mod PUSH;
 mod SENDER;
 mod SOME;
+mod SOURCE;
 mod SUB;
 mod SWAP;
 mod UNPAIR;
@@ -52,6 +53,7 @@ pub enum Instruction {
     PUSH,
     SENDER,
     SOME,
+    SOURCE,
     SUB,
     SWAP,
     UNPAIR,
@@ -96,6 +98,7 @@ impl Instruction {
             "PUSH" => Ok(Instruction::PUSH),
             "SENDER" => Ok(Instruction::SENDER),
             "SOME" => Ok(Instruction::SOME),
+            "SOURCE" => Ok(Instruction::SOURCE),
             "SUB" => Ok(Instruction::SUB),
             "SWAP" => Ok(Instruction::SWAP),
             "UNPAIR" => Ok(Instruction::UNPAIR),
@@ -218,6 +221,7 @@ impl Instruction {
             Instruction::PUSH => PUSH::run(initial_stack, args, options, stack_snapshots),
             Instruction::SENDER => SENDER::run(initial_stack, options, stack_snapshots),
             Instruction::SOME => SOME::run(initial_stack, options, stack_snapshots),
+            Instruction::SOURCE => SOURCE::run(initial_stack, options, stack_snapshots),
             Instruction::SUB => SUB::run(initial_stack, options, stack_snapshots),
             Instruction::SWAP => SWAP::run(initial_stack, options, stack_snapshots),
             Instruction::UNPAIR => UNPAIR::run(initial_stack, args, options, stack_snapshots),
