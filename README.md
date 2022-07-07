@@ -6,32 +6,98 @@ Available instructions (implemented and tested):
 
 - [x] ABS
 - [x] ADD
+- [ ] ADDRESS
 - [x] AMOUNT
+- [ ] AND
+- [ ] APPLY
+- [ ] BALANCE
+- [ ] BLAKE2B
+- [ ] CAST
+- [ ] CHAIN_ID
+- [ ] CHECK_SIGNATURE
 - [x] COMPARE
+- [ ] CONCAT
+- [ ] CONS
+- [ ] CONTRACT
+- [ ] CREATE_CONTRACT
 - [x] DIG
 - [ ] DIP
 - [x] DROP
-- [ ] DUG
+- [x] DUG
 - [x] DUP
+- [ ] EDIV
+- [ ] EMPTY_BIG_MAP
+- [ ] EMPTY_MAP
+- [ ] EMPTY_SET
 - [x] EQ
+- [ ] EXEC
 - [x] FAILWITH
 - [x] GE
 - [x] GT
 - [ ] GET
+- [ ] HASH_KEY
 - [x] IF
+- [ ] IF_CONS
 - [x] IF_LEFT
-- [ ] IFCMP\*
 - [ ] IF_NONE
+- [ ] IFCMP\*
+- [ ] IMPLICIT_ACCOUNT
+- [ ] INT
+- [ ] ISNAT
+- [ ] ITER
+- [ ] JOIN_TICKETS
+- [ ] KECCAK
+- [ ] LAMBDA
 - [x] LE
+- [ ] LEFT
+- [ ] LEVEL
+- [ ] LOOP
+- [ ] LSL
+- [ ] LSR
 - [x] LT
+- [ ] MAP
 - [ ] MEM
+- [ ] MUL
+- [ ] NEG
 - [x] NEQ
+- [ ] NEVER
 - [x] NIL
+- [ ] NONE
+- [ ] NOT
+- [ ] NOW
+- [ ] OPEN_CHEST
+- [ ] OR
+- [ ] PACK
 - [x] PAIR
+- [ ] PAIRING_CHECK
 - [x] PUSH
-- [ ] SENDER
+- [ ] READ_TICKET
+- [ ] RENAME
+- [ ] RIGHT
+- [ ] SAPLING_EMPTY_STATE
+- [ ] SAPLING_VERIFY_UPDATE
+- [ ] SELF
+- [ ] SELF_ADDRESS
+- [x] SENDER
+- [ ] SET_DELEGATE
+- [ ] SHA3
+- [ ] SHA256
+- [ ] SHA512
+- [ ] SIZE
+- [ ] SLICE
 - [x] SOME
+- [ ] SOURCE
+- [ ] SPLIT_TICKET
 - [x] SUB
 - [x] SWAP
+- [ ] TICKET
+- [ ] TOTAL_VOTING_POWER
+- [ ] TRANSFER_TOKENS
+- [ ] UNIT
+- [ ] UNPACK
 - [x] UNPAIR
 - [ ] UPDATE
+- [ ] VOTING_POWER
+- [ ] XOR
+
+(25 instructions / 94)

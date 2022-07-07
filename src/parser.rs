@@ -413,6 +413,7 @@ pub fn to_json(ast: &Vec<ParsedCode>) -> Result<String, String> {
 /// runs JSON Michelson code provided a parameter value and a storage
 pub fn run(json: &str, mut stack: Stack, mut stack_snapshots: StackSnapshots) -> Result<RunResult, String> {    
     // sets default options
+    // TODO: it may be better to pass these options as a parameter
     let options = RunOptions {
         context: RunOptionsContext {
             amount: 0,

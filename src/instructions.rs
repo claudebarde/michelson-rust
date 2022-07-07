@@ -22,6 +22,7 @@ mod NEQ;
 mod NIL;
 mod PAIR;
 mod PUSH;
+mod SENDER;
 mod SOME;
 mod SUB;
 mod SWAP;
@@ -49,6 +50,7 @@ pub enum Instruction {
     NIL,
     PAIR,
     PUSH,
+    SENDER,
     SOME,
     SUB,
     SWAP,
@@ -92,6 +94,7 @@ impl Instruction {
             "NIL" => Ok(Instruction::NIL),
             "PAIR" => Ok(Instruction::PAIR),
             "PUSH" => Ok(Instruction::PUSH),
+            "SENDER" => Ok(Instruction::SENDER),
             "SOME" => Ok(Instruction::SOME),
             "SUB" => Ok(Instruction::SUB),
             "SWAP" => Ok(Instruction::SWAP),
@@ -213,6 +216,7 @@ impl Instruction {
             Instruction::NIL => NIL::run(initial_stack, args, options, stack_snapshots),
             Instruction::PAIR => PAIR::run(initial_stack, options, stack_snapshots),
             Instruction::PUSH => PUSH::run(initial_stack, args, options, stack_snapshots),
+            Instruction::SENDER => SENDER::run(initial_stack, options, stack_snapshots),
             Instruction::SOME => SOME::run(initial_stack, options, stack_snapshots),
             Instruction::SUB => SUB::run(initial_stack, options, stack_snapshots),
             Instruction::SWAP => SWAP::run(initial_stack, options, stack_snapshots),
