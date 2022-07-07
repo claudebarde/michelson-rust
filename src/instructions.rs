@@ -18,6 +18,7 @@ mod IF;
 mod IF_LEFT;
 mod LE;
 mod LT;
+mod MUL;
 mod NEQ;
 mod NIL;
 mod PAIR;
@@ -47,6 +48,7 @@ pub enum Instruction {
     GT,
     LE,
     LT,
+    MUL,
     NEQ,
     NIL,
     PAIR,
@@ -92,6 +94,7 @@ impl Instruction {
             "GT" => Ok(Instruction::GT),
             "LE" => Ok(Instruction::LE),
             "LT" => Ok(Instruction::LT),
+            "MUL" => Ok(Instruction::MUL),
             "NEQ" => Ok(Instruction::NEQ),
             "NIL" => Ok(Instruction::NIL),
             "PAIR" => Ok(Instruction::PAIR),
@@ -215,6 +218,7 @@ impl Instruction {
             Instruction::GT => GT::run(initial_stack, options, stack_snapshots),
             Instruction::LE => LE::run(initial_stack, options, stack_snapshots),
             Instruction::LT => LT::run(initial_stack, options, stack_snapshots),
+            Instruction::MUL => MUL::run(initial_stack, options, stack_snapshots),
             Instruction::NEQ => NEQ::run(initial_stack, options, stack_snapshots),
             Instruction::NIL => NIL::run(initial_stack, args, options, stack_snapshots),
             Instruction::PAIR => PAIR::run(initial_stack, options, stack_snapshots),

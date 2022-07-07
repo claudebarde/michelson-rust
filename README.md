@@ -8,8 +8,33 @@ Available instructions (implemented and tested):
 
 - [x] ABS
 - [x] ADD
-- [ ] ADDRESS
 - [x] AMOUNT
+- [x] COMPARE
+- [x] DIG
+- [x] DROP
+- [x] DUG
+- [x] DUP
+- [x] EQ
+- [x] FAILWITH
+- [x] GE
+- [x] GT
+- [x] IF
+- [x] IF_LEFT
+- [x] LE
+- [x] LT
+- [x] MUL
+- [x] NEQ
+- [x] NIL
+- [x] PAIR
+- [x] PUSH
+- [x] SENDER
+- [x] SOME
+- [x] SOURCE
+- [x] SUB
+- [x] SWAP
+- [x] UNPAIR
+
+- [ ] ADDRESS
 - [ ] AND
 - [ ] APPLY
 - [ ] BALANCE
@@ -17,30 +42,19 @@ Available instructions (implemented and tested):
 - [ ] CAST
 - [ ] CHAIN_ID
 - [ ] CHECK_SIGNATURE
-- [x] COMPARE
 - [ ] CONCAT
 - [ ] CONS
 - [ ] CONTRACT
 - [ ] CREATE_CONTRACT
-- [x] DIG
 - [ ] DIP
-- [x] DROP
-- [x] DUG
-- [x] DUP
 - [ ] EDIV
 - [ ] EMPTY_BIG_MAP
 - [ ] EMPTY_MAP
 - [ ] EMPTY_SET
-- [x] EQ
 - [ ] EXEC
-- [x] FAILWITH
-- [x] GE
-- [x] GT
 - [ ] GET
 - [ ] HASH_KEY
-- [x] IF
 - [ ] IF_CONS
-- [x] IF_LEFT
 - [ ] IF_NONE
 - [ ] IFCMP\*
 - [ ] IMPLICIT_ACCOUNT
@@ -50,29 +64,22 @@ Available instructions (implemented and tested):
 - [ ] JOIN_TICKETS
 - [ ] KECCAK
 - [ ] LAMBDA
-- [x] LE
 - [ ] LEFT
 - [ ] LEVEL
 - [ ] LOOP
 - [ ] LSL
 - [ ] LSR
-- [x] LT
 - [ ] MAP
 - [ ] MEM
-- [ ] MUL
 - [ ] NEG
-- [x] NEQ
 - [ ] NEVER
-- [x] NIL
 - [ ] NONE
 - [ ] NOT
 - [ ] NOW
 - [ ] OPEN_CHEST
 - [ ] OR
 - [ ] PACK
-- [x] PAIR
 - [ ] PAIRING_CHECK
-- [x] PUSH
 - [ ] READ_TICKET
 - [ ] RENAME
 - [ ] RIGHT
@@ -80,26 +87,20 @@ Available instructions (implemented and tested):
 - [ ] SAPLING_VERIFY_UPDATE
 - [ ] SELF
 - [ ] SELF_ADDRESS
-- [x] SENDER
 - [ ] SET_DELEGATE
 - [ ] SHA3
 - [ ] SHA256
 - [ ] SHA512
 - [ ] SIZE
 - [ ] SLICE
-- [x] SOME
-- [x] SOURCE
 - [ ] SPLIT_TICKET
-- [x] SUB
-- [x] SWAP
 - [ ] TICKET
 - [ ] TOTAL_VOTING_POWER
 - [ ] TRANSFER_TOKENS
 - [ ] UNIT
 - [ ] UNPACK
-- [x] UNPAIR
 - [ ] UPDATE
 - [ ] VOTING_POWER
 - [ ] XOR
 
-(25 instructions / 94)
+(26 instructions / 94)
