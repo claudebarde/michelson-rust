@@ -1,3 +1,4 @@
+use crate::errors::{display_error, ErrorCode};
 use crate::m_types::{address, mutez};
 use crate::stack::{Stack, StackSnapshots};
 use regex::Regex;
@@ -8,6 +9,7 @@ mod AMOUNT;
 mod COMPARE;
 mod DIG;
 mod DROP;
+mod DUG;
 mod DUP;
 mod EQ;
 mod GE;
@@ -33,6 +35,7 @@ pub enum Instruction {
     COMPARE,
     DIG,
     DROP,
+    DUG,
     DUP,
     EQ,
     FAILWITH,
@@ -76,6 +79,7 @@ impl Instruction {
             "COMPARE" => Ok(Instruction::COMPARE),
             "DIG" => Ok(Instruction::DIG),
             "DROP" => Ok(Instruction::DROP),
+            "DUG" => Ok(Instruction::DUG),
             "DUP" => Ok(Instruction::DUP),
             "EQ" => Ok(Instruction::EQ),
             "IF" => Ok(Instruction::IF),
@@ -96,6 +100,79 @@ impl Instruction {
         }
     }
 
+    /// Checks if the provided argument is correct
+    /// Returns the numeric value from the argument
+    pub fn check_num_arg(&self, arg: &Option<&Vec<Value>>) -> Result<usize, String> {
+        // instruction argument type
+        enum ArgType {
+            Required,
+            Optional,
+            None,
+        }
+        // checks if the instruction can have a numeric argument
+        let arg_type = match self {
+            Instruction::DIG | Instruction::DUG => ArgType::Required,
+            Instruction::DUP | Instruction::DROP => ArgType::Optional,
+            _ => ArgType::None,
+        };
+
+        match (arg, arg_type) {
+            (_, ArgType::None) => Err(String::from(
+                "The {:?} instruction doesn't need a numeric argument",
+            )),
+            (None, ArgType::Required) => Err(display_error(ErrorCode::NoArgument(self.clone()))),
+            (None, ArgType::Optional) => Ok(1),
+            (Some(arg), _) => {
+                if arg.len() == 1 {
+                    let arg = &arg[0];
+                    if arg.is_object() && arg.get("int").is_some() {
+                        // gets the int value that will be stored as a string
+                        match arg.get("int").unwrap().as_str() {
+                            None => Err(String::from(format!(
+                                "Expected a string in JSON value for {:?}",
+                                self
+                            ))),
+                            Some(str) =>
+                            // parse the string into a number
+                            {
+                                match str.parse::<usize>() {
+                                    Err(_) => Err(format!(
+                                        "JSON value for {:?} argument is not a valid number: {}",
+                                        self, str
+                                    )),
+                                    Ok(val) => {
+                                        // INSTRUCTION 0 is a noop
+                                        if val == 0 {
+                                            Err(format!(
+                                                "{:?}",
+                                                ErrorCode::Noop(String::from(format!(
+                                                    "{:?} 0 is a noop",
+                                                    self
+                                                )))
+                                            ))
+                                        } else {
+                                            Ok(val)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Err(format!(
+                            "Unexpected format for {:?} argument: {:?}",
+                            self, arg
+                        ))
+                    }
+                } else {
+                    Err(format!(
+                        "{:?}",
+                        display_error(ErrorCode::UnexpectedArgsNumber((1, arg.len())))
+                    ))
+                }
+            }
+        }
+    }
+
     /// Runs the provided instruction against the provided stack, returns the new stack
     pub fn run(
         &self,
@@ -111,6 +188,7 @@ impl Instruction {
             Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
             Instruction::DIG => DIG::run(initial_stack, args, options, stack_snapshots),
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),
+            Instruction::DUG => DUG::run(initial_stack, args, options, stack_snapshots),
             Instruction::DUP => DUP::run(initial_stack, args, options, stack_snapshots),
             Instruction::EQ => EQ::run(initial_stack, options, stack_snapshots),
             Instruction::IF => {

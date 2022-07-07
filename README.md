@@ -8,7 +8,7 @@ Available instructions (implemented and tested):
 - [x] ADD
 - [x] AMOUNT
 - [x] COMPARE
-- [ ] DIG
+- [x] DIG
 - [ ] DIP
 - [x] DROP
 - [ ] DUG
