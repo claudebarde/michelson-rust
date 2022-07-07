@@ -1,3 +1,5 @@
+![Krusty Krab](https://upload.wikimedia.org/wikipedia/en/3/33/Krusty_Krab_230b.png)
+
 # A Michelson parser and runtime implemented in Rust
 
 I am writing this Michelson engine as I am learning Rust :)
@@ -86,7 +88,7 @@ Available instructions (implemented and tested):
 - [ ] SIZE
 - [ ] SLICE
 - [x] SOME
-- [ ] SOURCE
+- [x] SOURCE
 - [ ] SPLIT_TICKET
 - [x] SUB
 - [x] SWAP
