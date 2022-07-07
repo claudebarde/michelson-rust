@@ -401,4 +401,15 @@ impl MValue {
             _ => false,
         }
     }
+
+    /// safeguard method
+    /// creates a new address value and checks that the provided value is a valid address
+    pub fn new_address(val: String) -> Option<MValue> {
+        let mval = MValue::Address(val);
+        if mval.is_account_address() == true || mval.is_contract_address() == true {
+            Some(mval)
+        } else {
+            None
+        }
+    }
 }

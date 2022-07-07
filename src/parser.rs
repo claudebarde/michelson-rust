@@ -417,7 +417,7 @@ pub fn run(json: &str, mut stack: Stack, mut stack_snapshots: StackSnapshots) ->
     let options = RunOptions {
         context: RunOptionsContext {
             amount: 0,
-            sender: String::from("test_sender"),
+            sender: String::from("tz1Me1MGhK7taay748h4gPnX2cXvbgL6xsYL"),
             source: String::from("test_source"),
         }, 
         pos: 0
