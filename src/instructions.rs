@@ -29,6 +29,7 @@ mod SOME;
 mod SOURCE;
 mod SUB;
 mod SWAP;
+mod UNIT;
 mod UNPAIR;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -60,6 +61,7 @@ pub enum Instruction {
     SOURCE,
     SUB,
     SWAP,
+    UNIT,
     UNPAIR,
     INIT, // used to initialize the stack
 }
@@ -109,6 +111,7 @@ impl Instruction {
             "SOURCE" => Ok(Instruction::SOURCE),
             "SUB" => Ok(Instruction::SUB),
             "SWAP" => Ok(Instruction::SWAP),
+            "UNIT" => Ok(Instruction::UNIT),
             "UNPAIR" => Ok(Instruction::UNPAIR),
             _ => Err(format!("Unknown instruction {}", input)),
         }
@@ -234,6 +237,7 @@ impl Instruction {
             Instruction::SOURCE => SOURCE::run(initial_stack, options, stack_snapshots),
             Instruction::SUB => SUB::run(initial_stack, options, stack_snapshots),
             Instruction::SWAP => SWAP::run(initial_stack, options, stack_snapshots),
+            Instruction::UNIT => UNIT::run(initial_stack, options, stack_snapshots),
             Instruction::UNPAIR => UNPAIR::run(initial_stack, args, options, stack_snapshots),
             _ => panic!("Invalid instruction {:?}", self),
         };

@@ -20,6 +20,7 @@ Available instructions (implemented and tested):
 - [x] GT
 - [x] IF
 - [x] IF_LEFT
+- [x] INT
 - [x] LE
 - [x] LT
 - [x] MUL
@@ -32,6 +33,7 @@ Available instructions (implemented and tested):
 - [x] SOURCE
 - [x] SUB
 - [x] SWAP
+- [x] UNIT
 - [x] UNPAIR
 
 - [ ] ADDRESS
@@ -58,7 +60,6 @@ Available instructions (implemented and tested):
 - [ ] IF_NONE
 - [ ] IFCMP\*
 - [ ] IMPLICIT_ACCOUNT
-- [ ] INT
 - [ ] ISNAT
 - [ ] ITER
 - [ ] JOIN_TICKETS
@@ -97,10 +98,9 @@ Available instructions (implemented and tested):
 - [ ] TICKET
 - [ ] TOTAL_VOTING_POWER
 - [ ] TRANSFER_TOKENS
-- [ ] UNIT
 - [ ] UNPACK
 - [ ] UPDATE
 - [ ] VOTING_POWER
 - [ ] XOR
 
-(26 instructions / 94)
+(27 instructions / 94)
