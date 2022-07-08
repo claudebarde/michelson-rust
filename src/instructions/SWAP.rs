@@ -17,8 +17,8 @@ pub fn run(
             stack_snapshots.push(new_stack.clone());
 
             Ok((new_stack, stack_snapshots))
-        },
-        Err(err) => Err(err)
+        }
+        Err(err) => Err(err),
     }
 }
 
@@ -29,9 +29,9 @@ pub fn run(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stack::StackElement;
-    use crate::m_types::MValue;
     use crate::instructions::RunOptionsContext;
+    use crate::m_types::MValue;
+    use crate::stack::StackElement;
 
     // PASSING
     #[test]
@@ -47,6 +47,8 @@ mod tests {
                 amount: 0,
                 sender: String::from("test_sender"),
                 source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                level: 11,
             },
             pos: 0,
         };
@@ -66,17 +68,22 @@ mod tests {
 
     // FAILING
     #[test]
-    #[should_panic(expected = "Unexpected stack length, expected a length of 2 for instruction SWAP, got 1")]
+    #[should_panic(
+        expected = "Unexpected stack length, expected a length of 2 for instruction SWAP, got 1"
+    )]
     fn swap_short_stack() {
-        let initial_stack: Stack = vec![
-            StackElement::new(MValue::String(String::from("test")), Instruction::INIT),
-        ];
+        let initial_stack: Stack = vec![StackElement::new(
+            MValue::String(String::from("test")),
+            Instruction::INIT,
+        )];
         let stack_snapshots = vec![];
         let options = RunOptions {
             context: RunOptionsContext {
                 amount: 0,
                 sender: String::from("test_sender"),
                 source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                level: 11,
             },
             pos: 0,
         };
@@ -88,5 +95,4 @@ mod tests {
             Err(err) => panic!("{}", err),
         }
     }
-
 }

@@ -64,6 +64,8 @@ mod tests {
                 amount: 0,
                 sender: String::from("test_sender"),
                 source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                level: 11,
             },
             pos: 0,
         };
@@ -93,6 +95,8 @@ mod tests {
                 amount: 0,
                 sender: String::from("test_sender"),
                 source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                level: 11,
             },
             pos: 1,
         };
@@ -124,6 +128,8 @@ mod tests {
                 amount: 0,
                 sender: String::from("test_sender"),
                 source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                level: 11,
             },
             pos: 0,
         };
@@ -153,6 +159,8 @@ mod tests {
                 amount: 0,
                 sender: String::from("test_sender"),
                 source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                level: 11,
             },
             pos: 0,
         };
@@ -181,6 +189,8 @@ mod tests {
                 amount: 0,
                 sender: String::from("test_sender"),
                 source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                level: 11,
             },
             pos: 1,
         };
@@ -207,6 +217,8 @@ mod tests {
                 amount: 0,
                 sender: String::from("test_sender"),
                 source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                level: 11,
             },
             pos: 0,
         };

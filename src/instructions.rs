@@ -1,5 +1,5 @@
 use crate::errors::{display_error, ErrorCode};
-use crate::m_types::{address, mutez};
+use crate::m_types::{address, mutez, nat};
 use crate::stack::{Stack, StackSnapshots};
 use regex::Regex;
 use serde_json::Value;
@@ -66,6 +66,8 @@ pub struct RunOptionsContext {
     pub amount: mutez,
     pub sender: address,
     pub source: address,
+    pub self_address: address,
+    pub level: nat,
 }
 
 pub struct RunOptions {

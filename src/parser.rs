@@ -419,6 +419,8 @@ pub fn run(json: &str, mut stack: Stack, mut stack_snapshots: StackSnapshots) ->
             amount: 0,
             sender: String::from("tz1Me1MGhK7taay748h4gPnX2cXvbgL6xsYL"),
             source: String::from("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"),
+            self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+            level: 11,
         }, 
         pos: 0
     };
