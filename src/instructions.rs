@@ -71,6 +71,7 @@ pub struct RunOptionsContext {
     pub sender: address,
     pub source: address,
     pub self_address: address,
+    pub balance: mutez,
     pub level: nat,
 }
 
