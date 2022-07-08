@@ -31,6 +31,7 @@ Available instructions (implemented and tested):
 - [x] PUSH
 - [x] SELF_ADDRESS
 - [x] SENDER
+- [x] SIZE
 - [x] SOME
 - [x] SOURCE
 - [x] SUB
@@ -92,7 +93,6 @@ Available instructions (implemented and tested):
 - [ ] SHA3
 - [ ] SHA256
 - [ ] SHA512
-- [ ] SIZE
 - [ ] SLICE
 - [ ] SPLIT_TICKET
 - [ ] TICKET
@@ -103,4 +103,4 @@ Available instructions (implemented and tested):
 - [ ] VOTING_POWER
 - [ ] XOR
 
-(27 instructions / 94)
+(31 instructions / 94)

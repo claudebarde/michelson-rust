@@ -439,4 +439,60 @@ impl MValue {
             None
         }
     }
+
+    /// creates a new empty list
+    pub fn new_empty_list(t: MType) -> MValue {
+        MValue::List(CollectionValue {
+            m_type: t,
+            value: Box::new(vec![]),
+        })
+    }
+
+    /// creates a new list with the elements passed as arguments
+    pub fn new_list(elements: Vec<MValue>, t: MType) -> MValue {
+        // TODO: verify that the elements are all of the same MType
+        MValue::List(CollectionValue {
+            m_type: t,
+            value: Box::new(elements),
+        })
+    }
+
+    /// creates a new empty set
+    pub fn new_empty_set(t: MType) -> MValue {
+        MValue::Set(CollectionValue {
+            m_type: t,
+            value: Box::new(vec![]),
+        })
+    }
+
+    /// creates a new set with the elements passed as arguments
+    pub fn new_set(elements: Vec<MValue>, t: MType) -> MValue {
+        // TODO: verify that the element in the set are of the same MType and no duplicate
+        MValue::Set(CollectionValue {
+            m_type: t,
+            value: Box::new(elements),
+        })
+    }
+
+    /// creates a new empty map
+    pub fn new_empty_map(key_type: MType, value_type: MType) -> MValue {
+        MValue::Map(MapValue {
+            key_type,
+            value_type,
+            size: 0,
+            value: HashMap::new(),
+        })
+    }
+
+    /// creates a new map with the elements passed as arguments
+    pub fn new_map(key_type: MType, value_type: MType, elements: Vec<(MValue, MValue)>) -> MValue {
+        // TODO: verify that the element in the map are of the same MType
+        // TODO: verify that the elements can be map keys
+        MValue::Map(MapValue {
+            key_type,
+            value_type,
+            size: elements.len(),
+            value: elements.into_iter().collect(),
+        })
+    }
 }
