@@ -6,6 +6,7 @@ use serde_json::Value;
 mod ABS;
 mod ADD;
 mod AMOUNT;
+mod BALANCE;
 mod COMPARE;
 mod DIG;
 mod DROP;
@@ -36,6 +37,7 @@ mod UNPAIR;
 pub enum Instruction {
     ADD,
     ABS,
+    BALANCE,
     AMOUNT,
     COMPARE,
     DIG,
@@ -89,6 +91,7 @@ impl Instruction {
             "ADD" => Ok(Instruction::ADD),
             "ABS" => Ok(Instruction::ABS),
             "AMOUNT" => Ok(Instruction::AMOUNT),
+            "BALANCE" => Ok(Instruction::BALANCE),
             "COMPARE" => Ok(Instruction::COMPARE),
             "DIG" => Ok(Instruction::DIG),
             "DROP" => Ok(Instruction::DROP),
@@ -203,6 +206,7 @@ impl Instruction {
             Instruction::ABS => ABS::run(initial_stack, options, stack_snapshots),
             Instruction::ADD => ADD::run(initial_stack, options, stack_snapshots),
             Instruction::AMOUNT => AMOUNT::run(initial_stack, options, stack_snapshots),
+            Instruction::BALANCE => BALANCE::run(initial_stack, options, stack_snapshots),
             Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
             Instruction::DIG => DIG::run(initial_stack, args, options, stack_snapshots),
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),

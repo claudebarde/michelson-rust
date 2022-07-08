@@ -9,6 +9,7 @@ Available instructions (implemented and tested):
 - [x] ABS
 - [x] ADD
 - [x] AMOUNT
+- [x] BALANCE
 - [x] COMPARE
 - [x] DIG
 - [x] DROP
@@ -39,7 +40,6 @@ Available instructions (implemented and tested):
 - [ ] ADDRESS
 - [ ] AND
 - [ ] APPLY
-- [ ] BALANCE
 - [ ] BLAKE2B
 - [ ] CAST
 - [ ] CHAIN_ID
