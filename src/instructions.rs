@@ -25,6 +25,7 @@ mod NEQ;
 mod NIL;
 mod PAIR;
 mod PUSH;
+mod SELF_ADDRESS;
 mod SENDER;
 mod SOME;
 mod SOURCE;
@@ -58,6 +59,7 @@ pub enum Instruction {
     NIL,
     PAIR,
     PUSH,
+    SELF_ADDRESS,
     SENDER,
     SOME,
     SOURCE,
@@ -110,6 +112,7 @@ impl Instruction {
             "NIL" => Ok(Instruction::NIL),
             "PAIR" => Ok(Instruction::PAIR),
             "PUSH" => Ok(Instruction::PUSH),
+            "SELF_ADDRESS" => Ok(Instruction::SELF_ADDRESS),
             "SENDER" => Ok(Instruction::SENDER),
             "SOME" => Ok(Instruction::SOME),
             "SOURCE" => Ok(Instruction::SOURCE),
@@ -237,6 +240,7 @@ impl Instruction {
             Instruction::NIL => NIL::run(initial_stack, args, options, stack_snapshots),
             Instruction::PAIR => PAIR::run(initial_stack, options, stack_snapshots),
             Instruction::PUSH => PUSH::run(initial_stack, args, options, stack_snapshots),
+            Instruction::SELF_ADDRESS => SELF_ADDRESS::run(initial_stack, options, stack_snapshots),
             Instruction::SENDER => SENDER::run(initial_stack, options, stack_snapshots),
             Instruction::SOME => SOME::run(initial_stack, options, stack_snapshots),
             Instruction::SOURCE => SOURCE::run(initial_stack, options, stack_snapshots),

@@ -29,6 +29,7 @@ Available instructions (implemented and tested):
 - [x] NIL
 - [x] PAIR
 - [x] PUSH
+- [x] SELF_ADDRESS
 - [x] SENDER
 - [x] SOME
 - [x] SOURCE
@@ -87,7 +88,6 @@ Available instructions (implemented and tested):
 - [ ] SAPLING_EMPTY_STATE
 - [ ] SAPLING_VERIFY_UPDATE
 - [ ] SELF
-- [ ] SELF_ADDRESS
 - [ ] SET_DELEGATE
 - [ ] SHA3
 - [ ] SHA256
