@@ -10,7 +10,7 @@ pub enum ErrorCode {
     Noop(String),
     StackNotDeepEnough((usize, usize, Instruction)),
     UnexpectedArgsNumber((usize, usize)),
-    InvalidType((MType, MType, Instruction)),
+    InvalidType((Vec<MType>, MType, Instruction)),
     Unknown,
     WrongType((String, String)),
 }
@@ -40,8 +40,18 @@ pub fn display_error(error_code: ErrorCode) -> String {
             expected, got
         ),
         ErrorCode::InvalidType((expected, got, instruction)) => format!(
-            "Invalid type for `{:?}` expected {:?}, but got {:?}",
-            instruction, expected, got
+            "Invalid type for `{:?}` expected {}, but got {}",
+            instruction,
+            if expected.len() == 1 {
+                expected[0].to_string()
+            } else {
+                expected
+                    .iter()
+                    .map(|t| t.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" | ")
+            },
+            got.to_string()
         ),
     }
 }

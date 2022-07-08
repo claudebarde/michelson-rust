@@ -19,7 +19,7 @@ pub fn run(
     let new_val_res: Result<MValue, String> = match stack[options.pos].value {
         MValue::Nat(val) => Ok(MValue::Int(val as int)),
         _ => Err(display_error(ErrorCode::InvalidType((
-            MType::Nat,
+            vec![MType::Nat],
             stack[options.pos].value.get_type(),
             Instruction::INT,
         )))),
@@ -176,7 +176,7 @@ mod tests {
 
     // wrong type
     #[test]
-    #[should_panic(expected = "Invalid type for `INT` expected Nat, but got Mutez")]
+    #[should_panic(expected = "Invalid type for `INT` expected nat, but got mutez")]
     fn abs_wrong_type() {
         let initial_stack: Stack = vec![StackElement::new(
             MValue::Mutez(7_000_000),

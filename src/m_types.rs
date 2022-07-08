@@ -108,6 +108,33 @@ impl MType {
             _ => Err(String::from(format!("Unknown type '{}'", str))),
         }
     }
+
+    pub fn to_string(&self) -> String {
+        match self {
+            MType::Unit => String::from("unit"),
+            MType::Never => String::from("never"),
+            MType::Bool => String::from("bool"),
+            MType::Int => String::from("int"),
+            MType::Nat => String::from("nat"),
+            MType::String => String::from("string"),
+            MType::ChainId => String::from("chain_id"),
+            MType::Bytes => String::from("bytes"),
+            MType::Mutez => String::from("mutez"),
+            MType::KeyHash => String::from("key_hash"),
+            MType::Key => String::from("key"),
+            MType::Signature => String::from("signature"),
+            MType::Timestamp => String::from("timestamp"),
+            MType::Address => String::from("address"),
+            MType::Operation => String::from("operation"),
+            MType::Ticket => String::from("ticket"),
+            MType::Option(_) => String::from("option"),
+            MType::Or(_) => String::from("or"),
+            MType::Pair(_) => String::from("pair"),
+            MType::List(_) => String::from("list"),
+            MType::Set(_) => String::from("set"),
+            MType::Map(_) => String::from("map"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

@@ -36,7 +36,7 @@ pub fn run(
             Ok((new_stack, stack_snapshots))
         }
         _ => Err(display_error(ErrorCode::InvalidType((
-            MType::Int,
+            vec![MType::Int],
             stack[options.pos].value.get_type(),
             Instruction::LT,
         )))),
@@ -149,7 +149,7 @@ mod tests {
 
     // invalid type on the stack
     #[test]
-    #[should_panic(expected = "Invalid type for `LT` expected Int, but got Nat")]
+    #[should_panic(expected = "Invalid type for `LT` expected int, but got nat")]
     fn eq_invalid_type() {
         let initial_stack: Stack = vec![
             StackElement::new(MValue::Nat(0), Instruction::INIT),

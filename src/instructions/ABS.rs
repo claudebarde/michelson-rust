@@ -22,7 +22,7 @@ pub fn run(
             Ok(MValue::Nat(new_nat))
         }
         _ => Err(display_error(ErrorCode::InvalidType((
-            MType::Int,
+            vec![MType::Int],
             stack[options.pos].value.get_type(),
             Instruction::ABS,
         )))),
@@ -210,7 +210,7 @@ mod tests {
 
     // wrong type
     #[test]
-    #[should_panic(expected = "Invalid type for `ABS` expected Int, but got Mutez")]
+    #[should_panic(expected = "Invalid type for `ABS` expected int, but got mutez")]
     fn abs_wrong_type() {
         let initial_stack: Stack = vec![StackElement::new(
             MValue::Mutez(7_000_000),

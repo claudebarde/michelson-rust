@@ -27,6 +27,7 @@ mod PAIR;
 mod PUSH;
 mod SELF_ADDRESS;
 mod SENDER;
+mod SIZE;
 mod SOME;
 mod SOURCE;
 mod SUB;
@@ -61,6 +62,7 @@ pub enum Instruction {
     PUSH,
     SELF_ADDRESS,
     SENDER,
+    SIZE,
     SOME,
     SOURCE,
     SUB,
@@ -114,6 +116,7 @@ impl Instruction {
             "PUSH" => Ok(Instruction::PUSH),
             "SELF_ADDRESS" => Ok(Instruction::SELF_ADDRESS),
             "SENDER" => Ok(Instruction::SENDER),
+            "SIZE" => Ok(Instruction::SIZE),
             "SOME" => Ok(Instruction::SOME),
             "SOURCE" => Ok(Instruction::SOURCE),
             "SUB" => Ok(Instruction::SUB),
@@ -242,6 +245,7 @@ impl Instruction {
             Instruction::PUSH => PUSH::run(initial_stack, args, options, stack_snapshots),
             Instruction::SELF_ADDRESS => SELF_ADDRESS::run(initial_stack, options, stack_snapshots),
             Instruction::SENDER => SENDER::run(initial_stack, options, stack_snapshots),
+            Instruction::SIZE => SIZE::run(initial_stack, options, stack_snapshots),
             Instruction::SOME => SOME::run(initial_stack, options, stack_snapshots),
             Instruction::SOURCE => SOURCE::run(initial_stack, options, stack_snapshots),
             Instruction::SUB => SUB::run(initial_stack, options, stack_snapshots),
