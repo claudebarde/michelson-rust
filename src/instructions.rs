@@ -6,6 +6,7 @@ use serde_json::Value;
 mod ABS;
 mod ADD;
 mod AMOUNT;
+mod AND;
 mod BALANCE;
 mod COMPARE;
 mod DIG;
@@ -37,8 +38,9 @@ mod UNPAIR;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Instruction {
-    ADD,
     ABS,
+    ADD,
+    AND,
     BALANCE,
     AMOUNT,
     COMPARE,
@@ -92,8 +94,9 @@ impl Instruction {
         let format_regex = Regex::new(r"[^A-Z_]").unwrap();
         let formatted_input: &str = &format_regex.replace_all(input, "").to_string();
         match formatted_input {
-            "ADD" => Ok(Instruction::ADD),
             "ABS" => Ok(Instruction::ABS),
+            "ADD" => Ok(Instruction::ADD),
+            "AND" => Ok(Instruction::AND),
             "AMOUNT" => Ok(Instruction::AMOUNT),
             "BALANCE" => Ok(Instruction::BALANCE),
             "COMPARE" => Ok(Instruction::COMPARE),
@@ -211,6 +214,7 @@ impl Instruction {
         let result = match self {
             Instruction::ABS => ABS::run(initial_stack, options, stack_snapshots),
             Instruction::ADD => ADD::run(initial_stack, options, stack_snapshots),
+            Instruction::AND => AND::run(initial_stack, options, stack_snapshots),
             Instruction::AMOUNT => AMOUNT::run(initial_stack, options, stack_snapshots),
             Instruction::BALANCE => BALANCE::run(initial_stack, options, stack_snapshots),
             Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
