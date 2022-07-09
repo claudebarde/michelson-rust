@@ -55,7 +55,7 @@ mod tests {
     // PASSING
     // Tests XOR with 2 bools
     #[test]
-    fn or_bool_bool() -> () {
+    fn xor_bool_bool() -> () {
         let initial_stack: Stack = vec![
             StackElement::new(MValue::Bool(true), Instruction::INIT),
             StackElement::new(MValue::Bool(true), Instruction::INIT),
@@ -90,7 +90,7 @@ mod tests {
 
     // Tests XOR with 2 nats
     #[test]
-    fn or_nat_nat() -> () {
+    fn xor_nat_nat() -> () {
         let initial_stack: Stack = vec![
             StackElement::new(MValue::Nat(2), Instruction::INIT),
             StackElement::new(MValue::Nat(3), Instruction::INIT),
@@ -129,7 +129,7 @@ mod tests {
     #[should_panic(
         expected = "Invalid types for `XOR` expected `bool/bool` or `nat/nat`, but got `string/nat`"
     )]
-    fn and_wrong_types() -> () {
+    fn xor_wrong_types() -> () {
         let initial_stack: Stack = vec![
             StackElement::new(MValue::String(String::from("test")), Instruction::INIT),
             StackElement::new(MValue::Nat(3), Instruction::INIT),
@@ -161,7 +161,7 @@ mod tests {
     #[should_panic(
         expected = "Unexpected stack length, expected a length of 2 for instruction XOR, got 1"
     )]
-    fn and_wrong_stack_depth() -> () {
+    fn xor_wrong_stack_depth() -> () {
         let initial_stack: Stack = vec![StackElement::new(MValue::Nat(3), Instruction::INIT)];
         let stack_snapshots = vec![];
         let options = RunOptions {

@@ -29,6 +29,7 @@ Available instructions (implemented and tested):
 - [x] MUL
 - [x] NEQ
 - [x] NIL
+- [x] NOT
 - [x] OR
 - [x] PAIR
 - [x] PUSH
@@ -80,7 +81,6 @@ Available instructions (implemented and tested):
 - [ ] NEG
 - [ ] NEVER
 - [ ] NONE
-- [ ] NOT
 - [ ] NOW
 - [ ] OPEN_CHEST
 - [ ] PACK
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(34 instructions / 94)
+(35 instructions / 94)
