@@ -36,6 +36,7 @@ mod SUB;
 mod SWAP;
 mod UNIT;
 mod UNPAIR;
+mod XOR;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Instruction {
@@ -73,6 +74,7 @@ pub enum Instruction {
     SWAP,
     UNIT,
     UNPAIR,
+    XOR,
     INIT, // used to initialize the stack
 }
 
@@ -129,6 +131,7 @@ impl Instruction {
             "SWAP" => Ok(Instruction::SWAP),
             "UNIT" => Ok(Instruction::UNIT),
             "UNPAIR" => Ok(Instruction::UNPAIR),
+            "XOR" => Ok(Instruction::XOR),
             _ => Err(format!("Unknown instruction {}", input)),
         }
     }
@@ -260,6 +263,7 @@ impl Instruction {
             Instruction::SWAP => SWAP::run(initial_stack, options, stack_snapshots),
             Instruction::UNIT => UNIT::run(initial_stack, options, stack_snapshots),
             Instruction::UNPAIR => UNPAIR::run(initial_stack, args, options, stack_snapshots),
+            Instruction::XOR => XOR::run(initial_stack, options, stack_snapshots),
             _ => panic!("Invalid instruction {:?}", self),
         };
         match result {

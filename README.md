@@ -3,6 +3,7 @@
 # A Michelson parser and runtime implemented in Rust
 
 I am writing this Michelson engine as I am learning Rust :)
+As it is a work in process, it is subject to constant breaking changes. Wait until the stable version to use.
 
 Available instructions (implemented and tested):
 
@@ -28,6 +29,7 @@ Available instructions (implemented and tested):
 - [x] MUL
 - [x] NEQ
 - [x] NIL
+- [x] OR
 - [x] PAIR
 - [x] PUSH
 - [x] SELF_ADDRESS
@@ -39,6 +41,7 @@ Available instructions (implemented and tested):
 - [x] SWAP
 - [x] UNIT
 - [x] UNPAIR
+- [x] XOR
 
 - [ ] ADDRESS
 - [ ] APPLY
@@ -80,7 +83,6 @@ Available instructions (implemented and tested):
 - [ ] NOT
 - [ ] NOW
 - [ ] OPEN_CHEST
-- [ ] OR
 - [ ] PACK
 - [ ] PAIRING_CHECK
 - [ ] READ_TICKET
@@ -101,6 +103,5 @@ Available instructions (implemented and tested):
 - [ ] UNPACK
 - [ ] UPDATE
 - [ ] VOTING_POWER
-- [ ] XOR
 
-(32 instructions / 94)
+(34 instructions / 94)
