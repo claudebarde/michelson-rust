@@ -1,9 +1,9 @@
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{CollectionValue, MType, MValue};
+use crate::m_types::{MType, MValue, OptionValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use serde_json::Value;
 
-// https://tezos.gitlab.io/michelson-reference/#instr-NIL
+// https://tezos.gitlab.io/michelson-reference/#instr-NONE
 
 pub fn run(
     stack: Stack,
@@ -14,27 +14,27 @@ pub fn run(
     // no need to check the stack, it can be empty
     let new_stack_res: Result<Stack, String> = match args {
         None => Err(String::from(
-            "Arguments for NIL instruction cannot be empty",
+            "Arguments for NONE instruction cannot be empty",
         )),
         Some(val) => {
             if val[0].is_object() {
-                let new_list_res: Result<StackElement, String> = match val[0]["prim"].as_str() {
-                    None => Err(String::from("Expected string for the list element type")),
+                let new_opt_res: Result<StackElement, String> = match val[0]["prim"].as_str() {
+                    None => Err(String::from("Expected string for the option element type")),
                     Some(str) => match MType::from_string(str) {
                         Err(err) => Err(err),
-                        Ok(list_type) => Ok(StackElement::new(
-                            MValue::List(CollectionValue {
-                                m_type: list_type,
-                                value: Box::new(vec![]),
+                        Ok(option_type) => Ok(StackElement::new(
+                            MValue::Option(OptionValue {
+                                m_type: option_type,
+                                value: Box::new(None),
                             }),
-                            Instruction::NIL,
+                            Instruction::NONE,
                         )),
                     },
                 };
-                match new_list_res {
+                match new_opt_res {
                     Err(err) => Err(err),
-                    Ok(new_list) => {
-                        let new_stack = stack.insert_at(vec![new_list], options.pos);
+                    Ok(new_option) => {
+                        let new_stack = stack.insert_at(vec![new_option], options.pos);
                         Ok(new_stack)
                     }
                 }
@@ -62,13 +62,13 @@ pub fn run(
 mod tests {
     use super::*;
     use crate::instructions::RunOptionsContext;
-    use crate::m_types::{CollectionValue, MType};
+    use crate::m_types::{MType, OptionValue};
     use serde_json::json;
 
     // PASSING TESTS
-    // pushes a new empty list of nat to the stack
+    // pushes a new option of type nat to the stack
     #[test]
-    fn nil_list_of_nat() {
+    fn option_of_nat() {
         let arg_value: Value = json!({ "prim": "nat" });
         let arg_vec = vec![arg_value];
         let args: Option<&Vec<Value>> = Some(&arg_vec);
@@ -93,12 +93,12 @@ mod tests {
 
         match run(initial_stack, args, &options, stack_snapshots) {
             Ok((stack, _)) => {
-                let expected_list = CollectionValue {
+                let expected_option = OptionValue {
                     m_type: MType::Nat,
-                    value: Box::new(vec![]),
+                    value: Box::new(None),
                 };
                 assert!(stack.len() == 3);
-                assert_eq!(stack[0].value, MValue::List(expected_list))
+                assert_eq!(stack[0].value, MValue::Option(expected_option))
             }
             Err(err) => panic!("{}", err),
         }
@@ -107,7 +107,7 @@ mod tests {
     // FAILING TESTS
     // No argument
     #[test]
-    #[should_panic(expected = "Arguments for NIL instruction cannot be empty")]
+    #[should_panic(expected = "Arguments for NONE instruction cannot be empty")]
     fn nil_empty_args() {
         let args: Option<&Vec<Value>> = None;
         let initial_stack: Stack = vec![
@@ -137,7 +137,7 @@ mod tests {
 
     // Wrong argument
     #[test]
-    #[should_panic(expected = "Expected string for the list element type")]
+    #[should_panic(expected = "Expected string for the option element type")]
     fn nil_wrong_args() {
         let arg_value: Value = json!({ "int": "3" });
         let arg_vec = vec![arg_value];

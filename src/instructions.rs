@@ -24,6 +24,7 @@ mod LT;
 mod MUL;
 mod NEQ;
 mod NIL;
+mod NONE;
 mod NOT;
 mod OR;
 mod PAIR;
@@ -63,6 +64,7 @@ pub enum Instruction {
     MUL,
     NEQ,
     NIL,
+    NONE,
     NOT,
     OR,
     PAIR,
@@ -121,6 +123,7 @@ impl Instruction {
             "MUL" => Ok(Instruction::MUL),
             "NEQ" => Ok(Instruction::NEQ),
             "NIL" => Ok(Instruction::NIL),
+            "NONE" => Ok(Instruction::NONE),
             "NOT" => Ok(Instruction::NOT),
             "OR" => Ok(Instruction::OR),
             "PAIR" => Ok(Instruction::PAIR),
@@ -254,6 +257,7 @@ impl Instruction {
             Instruction::MUL => MUL::run(initial_stack, options, stack_snapshots),
             Instruction::NEQ => NEQ::run(initial_stack, options, stack_snapshots),
             Instruction::NIL => NIL::run(initial_stack, args, options, stack_snapshots),
+            Instruction::NONE => NONE::run(initial_stack, args, options, stack_snapshots),
             Instruction::NOT => NOT::run(initial_stack, options, stack_snapshots),
             Instruction::OR => OR::run(initial_stack, options, stack_snapshots),
             Instruction::PAIR => PAIR::run(initial_stack, options, stack_snapshots),
