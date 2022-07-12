@@ -22,6 +22,7 @@ mod INT;
 mod LE;
 mod LT;
 mod MUL;
+mod NEG;
 mod NEQ;
 mod NIL;
 mod NONE;
@@ -62,6 +63,7 @@ pub enum Instruction {
     LE,
     LT,
     MUL,
+    NEG,
     NEQ,
     NIL,
     NONE,
@@ -121,6 +123,7 @@ impl Instruction {
             "LE" => Ok(Instruction::LE),
             "LT" => Ok(Instruction::LT),
             "MUL" => Ok(Instruction::MUL),
+            "NEG" => Ok(Instruction::NEG),
             "NEQ" => Ok(Instruction::NEQ),
             "NIL" => Ok(Instruction::NIL),
             "NONE" => Ok(Instruction::NONE),
@@ -255,6 +258,7 @@ impl Instruction {
             Instruction::LE => LE::run(initial_stack, options, stack_snapshots),
             Instruction::LT => LT::run(initial_stack, options, stack_snapshots),
             Instruction::MUL => MUL::run(initial_stack, options, stack_snapshots),
+            Instruction::NEG => NEG::run(initial_stack, options, stack_snapshots),
             Instruction::NEQ => NEQ::run(initial_stack, options, stack_snapshots),
             Instruction::NIL => NIL::run(initial_stack, args, options, stack_snapshots),
             Instruction::NONE => NONE::run(initial_stack, args, options, stack_snapshots),
