@@ -1,6 +1,6 @@
 use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{int, nat, MType, MValue};
+use crate::m_types::{int, MType, MValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 
 // https://tezos.gitlab.io/michelson-reference/#instr-NEG

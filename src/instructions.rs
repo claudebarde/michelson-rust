@@ -9,6 +9,7 @@ mod AMOUNT;
 mod AND;
 mod BALANCE;
 mod COMPARE;
+mod CONCAT;
 mod DIG;
 mod DROP;
 mod DUG;
@@ -49,6 +50,7 @@ pub enum Instruction {
     BALANCE,
     AMOUNT,
     COMPARE,
+    CONCAT,
     DIG,
     DROP,
     DUG,
@@ -110,6 +112,7 @@ impl Instruction {
             "AMOUNT" => Ok(Instruction::AMOUNT),
             "BALANCE" => Ok(Instruction::BALANCE),
             "COMPARE" => Ok(Instruction::COMPARE),
+            "CONCAT" => Ok(Instruction::CONCAT),
             "DIG" => Ok(Instruction::DIG),
             "DROP" => Ok(Instruction::DROP),
             "DUG" => Ok(Instruction::DUG),
@@ -233,6 +236,7 @@ impl Instruction {
             Instruction::AMOUNT => AMOUNT::run(initial_stack, options, stack_snapshots),
             Instruction::BALANCE => BALANCE::run(initial_stack, options, stack_snapshots),
             Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
+            Instruction::CONCAT => CONCAT::run(initial_stack, options, stack_snapshots),
             Instruction::DIG => DIG::run(initial_stack, args, options, stack_snapshots),
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),
             Instruction::DUG => DUG::run(initial_stack, args, options, stack_snapshots),
