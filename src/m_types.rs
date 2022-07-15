@@ -205,19 +205,16 @@ pub struct CollectionValue {
 }
 
 impl CollectionValue {
-    pub fn check_elements_type(
-        &self,
-        expected_type: MType,
-        current_instruction: Instruction,
-    ) -> Result<(), String> {
+    /// checks if all the elements in the list are of the expected type
+    pub fn check_elements_type(&self, current_instruction: Instruction) -> Result<(), String> {
         let mut collection_res = self.value.clone().into_iter().map(|val| {
             let el_type = val.get_type();
-            if el_type == expected_type {
+            if el_type == self.m_type {
                 Ok(())
             } else {
                 Err(format!(
                     "Expected values of type {} in list for `{:?}`, but got a value of type {}",
-                    expected_type.to_string(),
+                    self.m_type.to_string(),
                     current_instruction,
                     el_type.to_string()
                 ))
@@ -228,6 +225,23 @@ impl CollectionValue {
             None => Ok(()),
             Some(err) => err,
         }
+    }
+
+    /// Prepends an element to a collection value vector
+    /// `.cons` should be used with MValue of type list to match Michelson CONS
+    pub fn cons(&self, element: MValue) -> CollectionValue {
+        let mut val = self.value.clone();
+        val.insert(0, element);
+        CollectionValue {
+            m_type: self.clone().m_type,
+            value: self.clone().value,
+        }
+    }
+
+    /// Alias for `cons` to use with MValue of type set
+    /// `.update` should be used with MValue of type list to match Michelson UPDATE
+    pub fn update(&mut self, element: MValue) -> CollectionValue {
+        self.cons(element)
     }
 }
 

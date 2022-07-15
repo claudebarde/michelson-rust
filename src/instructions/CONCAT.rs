@@ -56,7 +56,7 @@ pub fn run(
                     // type validation of list elements
                     // NOTE: checking the types of the elements in the list here
                     // may not be necessary as it is done again below
-                    list.check_elements_type(MType::String, Instruction::CONCAT)?;
+                    list.check_elements_type(Instruction::CONCAT)?;
                     // list concatenation
                     Ok((MValue::String(
                         list.value
@@ -74,7 +74,7 @@ pub fn run(
                     // type validation of list elements
                     // NOTE: checking the types of the elements in the list here
                     // may not be necessary as it is done again below
-                    list.check_elements_type(MType::Bytes, Instruction::CONCAT)?;
+                    list.check_elements_type(Instruction::CONCAT)?;
                     // list concatenation
                     Ok((MValue::Bytes(
                         list.value

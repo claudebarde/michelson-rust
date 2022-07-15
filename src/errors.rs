@@ -10,6 +10,7 @@ pub enum ErrorCode {
     Noop(String),
     StackNotDeepEnough((usize, usize, Instruction)),
     UnexpectedArgsNumber((usize, usize)),
+    InvalidStack((usize, MType, MType, Instruction)),
     InvalidType((Vec<MType>, MType, Instruction)),
     Unknown,
     WrongType((String, String)),
@@ -52,6 +53,13 @@ pub fn display_error(error_code: ErrorCode) -> String {
                     .join(" | ")
             },
             got.to_string()
+        ),
+        ErrorCode::InvalidStack((pos, expected, got, instruction)) => format!(
+            "Expected element at position {} to be of type {}, but got {} for instruction {:?}",
+            pos,
+            expected.to_string(),
+            got.to_string(),
+            instruction
         ),
     }
 }
