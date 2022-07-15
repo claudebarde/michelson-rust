@@ -13,6 +13,7 @@ Available instructions (implemented and tested):
 - [x] AMOUNT
 - [x] BALANCE
 - [x] COMPARE
+- [x] CONCAT
 - [x] DIG
 - [x] DROP
 - [x] DUG
@@ -51,7 +52,6 @@ Available instructions (implemented and tested):
 - [ ] CAST
 - [ ] CHAIN_ID
 - [ ] CHECK_SIGNATURE
-- [ ] CONCAT
 - [ ] CONS
 - [ ] CONTRACT
 - [ ] CREATE_CONTRACT
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(36 instructions / 94)
+(37 instructions / 94)

@@ -1,3 +1,4 @@
+use crate::instructions::Instruction;
 use bs58;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
@@ -201,6 +202,33 @@ impl PairValue {
 pub struct CollectionValue {
     pub m_type: MType,
     pub value: Box<Vec<MValue>>,
+}
+
+impl CollectionValue {
+    pub fn check_elements_type(
+        &self,
+        expected_type: MType,
+        current_instruction: Instruction,
+    ) -> Result<(), String> {
+        let mut collection_res = self.value.clone().into_iter().map(|val| {
+            let el_type = val.get_type();
+            if el_type == expected_type {
+                Ok(())
+            } else {
+                Err(format!(
+                    "Expected values of type {} in list for `{:?}`, but got a value of type {}",
+                    expected_type.to_string(),
+                    current_instruction,
+                    el_type.to_string()
+                ))
+            }
+        });
+        // finds the first error and returns it if there is one
+        match collection_res.find(|x| x.is_err()) {
+            None => Ok(()),
+            Some(err) => err,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -494,5 +522,15 @@ impl MValue {
             size: elements.len(),
             value: elements.into_iter().collect(),
         })
+    }
+
+    /// creates a new string value
+    pub fn new_string(val: &str) -> MValue {
+        MValue::String(val.to_string())
+    }
+
+    /// creates a new bytes value
+    pub fn new_bytes(val: &str) -> MValue {
+        MValue::Bytes(val.to_string())
     }
 }
