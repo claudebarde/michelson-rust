@@ -1,6 +1,6 @@
 use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{MType, MValue, CollectionValue};
+use crate::m_types::{MType, MValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 
 // https://tezos.gitlab.io/michelson-reference/#instr-CONS
@@ -49,5 +49,138 @@ pub fn run(
             second_el.get_type(),
             Instruction::CONS,
         )))),
+    }
+}
+
+/*
+    TESTS
+*/
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::instructions::RunOptionsContext;
+
+    // PASSING
+    #[test]
+    fn cons_success() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::new_string("hello"), Instruction::INIT),
+            StackElement::new(MValue::new_list(vec![MValue::new_string("world")], MType::String), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+            level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 2);
+                match &stack[0].value {
+                    MValue::List(list) => {
+                        assert_eq!(list.size(), 2);
+                        assert_eq!(list.value[0], MValue::new_string("hello"));
+                        assert_eq!(list.value[1], MValue::new_string("world"));
+                    },
+                    _ => assert!(false)
+                }
+                assert_eq!(stack[1].value, MValue::Mutez(6_000_000));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+            }
+        }
+    }
+
+    // FAILING
+    // wrong stack
+    #[test]
+    fn cons_wrong_stack() {
+        // stack not deep enough
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::new_string("hello"), Instruction::INIT)
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+            level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 1);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, "Unexpected stack length, expected a length of 2 for instruction CONS, got 1"),
+            Ok(_) => assert!(false)
+        }
+
+        // stack with wrong values
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::new_string("hello"), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+            level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 2);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, "Expected element at position 1 to be of type list, but got mutez for instruction CONS"),
+            Ok(_) => assert!(false)
+        }
+    }
+
+    // value to cons doesn't match list type
+    fn cons_wrong_element_type() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+            StackElement::new(MValue::new_list(vec![MValue::new_string("world")], MType::String), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+            level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, "Element to prepend to the list with CONS is of type nat, while the list elements are of type string"),
+            Ok(_) => assert!(false)
+        }
     }
 }

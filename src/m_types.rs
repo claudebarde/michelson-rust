@@ -234,7 +234,7 @@ impl CollectionValue {
         val.insert(0, element);
         CollectionValue {
             m_type: self.clone().m_type,
-            value: self.clone().value,
+            value: val,
         }
     }
 
@@ -242,6 +242,11 @@ impl CollectionValue {
     /// `.update` should be used with MValue of type list to match Michelson UPDATE
     pub fn update(&mut self, element: MValue) -> CollectionValue {
         self.cons(element)
+    }
+
+    /// Returns the size of the collection
+    pub fn size(&self) -> nat {
+        self.value.len() as nat
     }
 }
 
