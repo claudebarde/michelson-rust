@@ -21,6 +21,7 @@ mod GT;
 mod IF;
 mod IF_LEFT;
 mod INT;
+mod ISNAT;
 mod LE;
 mod LT;
 mod MUL;
@@ -62,6 +63,7 @@ pub enum Instruction {
     IF,
     IF_LEFT,
     INT,
+    ISNAT,
     GE,
     GT,
     LE,
@@ -124,6 +126,7 @@ impl Instruction {
             "IF" => Ok(Instruction::IF),
             "IF_LEFT" => Ok(Instruction::IF_LEFT),
             "INT" => Ok(Instruction::INT),
+            "ISNAT" => Ok(Instruction::ISNAT),
             "GE" => Ok(Instruction::GE),
             "GT" => Ok(Instruction::GT),
             "LE" => Ok(Instruction::LE),
@@ -261,6 +264,7 @@ impl Instruction {
                 }
             }
             Instruction::INT => INT::run(initial_stack, options, stack_snapshots),
+            Instruction::ISNAT => ISNAT::run(initial_stack, options, stack_snapshots),
             Instruction::GE => GE::run(initial_stack, options, stack_snapshots),
             Instruction::GT => GT::run(initial_stack, options, stack_snapshots),
             Instruction::LE => LE::run(initial_stack, options, stack_snapshots),

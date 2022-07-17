@@ -144,6 +144,15 @@ pub struct OptionValue {
     pub value: Box<Option<MValue>>,
 }
 
+impl OptionValue {
+    pub fn new(val: Option<MValue>, m_type: MType) -> OptionValue {
+        OptionValue {
+            m_type,
+            value: Box::new(val),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct OrValue {
     pub m_type: (MType, MType),

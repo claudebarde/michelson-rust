@@ -26,6 +26,7 @@ Available instructions (implemented and tested):
 - [x] IF
 - [x] IF_LEFT
 - [x] INT
+- [x] ISNAT
 - [x] LE
 - [x] LT
 - [x] MUL
@@ -67,7 +68,6 @@ Available instructions (implemented and tested):
 - [ ] IF_NONE
 - [ ] IFCMP\*
 - [ ] IMPLICIT_ACCOUNT
-- [ ] ISNAT
 - [ ] ITER
 - [ ] JOIN_TICKETS
 - [ ] KECCAK
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(38 instructions / 94)
+(39 instructions / 94)
