@@ -18,6 +18,7 @@ pub fn run(
         )),
         Some(val) => {
             if val[0].is_object() {
+                // TODO: refactor that with ?
                 let new_list_res: Result<StackElement, String> = match val[0]["prim"].as_str() {
                     None => Err(String::from("Expected string for the list element type")),
                     Some(str) => match MType::from_string(str) {
@@ -39,7 +40,8 @@ pub fn run(
                     }
                 }
             } else {
-                panic!("Expected a 'serde_json::Value' of type object")
+                // TODO: refactor this part so the function can output an Err and not panic (cf LEFT)
+                panic!("Expected a 'serde_json::Value' of type object for NIL instruction")
             }
         }
     };
