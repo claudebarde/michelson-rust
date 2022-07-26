@@ -23,7 +23,7 @@ mod IF_LEFT;
 mod INT;
 mod ISNAT;
 mod LE;
-mod LEFT;
+mod LEFT_RIGHT;
 mod LT;
 mod MUL;
 mod NEG;
@@ -79,6 +79,7 @@ pub enum Instruction {
     OR,
     PAIR,
     PUSH,
+    RIGHT,
     SELF_ADDRESS,
     SENDER,
     SIZE,
@@ -104,6 +105,11 @@ pub struct RunOptionsContext {
 pub struct RunOptions {
     pub context: RunOptionsContext,
     pub pos: usize,
+}
+
+pub enum LeftOrRight {
+    Left,
+    Right,
 }
 
 impl Instruction {
@@ -143,6 +149,7 @@ impl Instruction {
             "OR" => Ok(Instruction::OR),
             "PAIR" => Ok(Instruction::PAIR),
             "PUSH" => Ok(Instruction::PUSH),
+            "RIGHT" => Ok(Instruction::RIGHT),
             "SELF_ADDRESS" => Ok(Instruction::SELF_ADDRESS),
             "SENDER" => Ok(Instruction::SENDER),
             "SIZE" => Ok(Instruction::SIZE),
@@ -271,7 +278,13 @@ impl Instruction {
             Instruction::GE => GE::run(initial_stack, options, stack_snapshots),
             Instruction::GT => GT::run(initial_stack, options, stack_snapshots),
             Instruction::LE => LE::run(initial_stack, options, stack_snapshots),
-            Instruction::LEFT => LEFT::run(initial_stack, args, options, stack_snapshots),
+            Instruction::LEFT => LEFT_RIGHT::run(
+                initial_stack,
+                args,
+                options,
+                stack_snapshots,
+                LeftOrRight::Left,
+            ),
             Instruction::LT => LT::run(initial_stack, options, stack_snapshots),
             Instruction::MUL => MUL::run(initial_stack, options, stack_snapshots),
             Instruction::NEG => NEG::run(initial_stack, options, stack_snapshots),
@@ -282,6 +295,13 @@ impl Instruction {
             Instruction::OR => OR::run(initial_stack, options, stack_snapshots),
             Instruction::PAIR => PAIR::run(initial_stack, options, stack_snapshots),
             Instruction::PUSH => PUSH::run(initial_stack, args, options, stack_snapshots),
+            Instruction::RIGHT => LEFT_RIGHT::run(
+                initial_stack,
+                args,
+                options,
+                stack_snapshots,
+                LeftOrRight::Right,
+            ),
             Instruction::SELF_ADDRESS => SELF_ADDRESS::run(initial_stack, options, stack_snapshots),
             Instruction::SENDER => SENDER::run(initial_stack, options, stack_snapshots),
             Instruction::SIZE => SIZE::run(initial_stack, options, stack_snapshots),

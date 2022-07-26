@@ -28,6 +28,7 @@ Available instructions (implemented and tested):
 - [x] INT
 - [x] ISNAT
 - [x] LE
+- [x] LEFT
 - [x] LT
 - [x] MUL
 - [x] NEQ
@@ -37,6 +38,7 @@ Available instructions (implemented and tested):
 - [x] OR
 - [x] PAIR
 - [x] PUSH
+- [x] RIGHT
 - [x] SELF_ADDRESS
 - [x] SENDER
 - [x] SIZE
@@ -72,7 +74,6 @@ Available instructions (implemented and tested):
 - [ ] JOIN_TICKETS
 - [ ] KECCAK
 - [ ] LAMBDA
-- [ ] LEFT
 - [ ] LEVEL
 - [ ] LOOP
 - [ ] LSL
@@ -87,7 +88,6 @@ Available instructions (implemented and tested):
 - [ ] PAIRING_CHECK
 - [ ] READ_TICKET
 - [ ] RENAME
-- [ ] RIGHT
 - [ ] SAPLING_EMPTY_STATE
 - [ ] SAPLING_VERIFY_UPDATE
 - [ ] SELF
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(39 instructions / 94)
+(41 instructions / 94)
