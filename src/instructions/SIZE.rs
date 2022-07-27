@@ -20,7 +20,7 @@ pub fn run(
         MValue::Bytes(val) => Ok(MValue::Nat(val.len() as nat)),
         MValue::List(list) => Ok(MValue::Nat(list.value.len() as nat)),
         MValue::Set(set) => Ok(MValue::Nat(set.value.len() as nat)),
-        MValue::Map(map) => Ok(MValue::Nat(map.size as nat)),
+        MValue::Map(map) => Ok(MValue::Nat(map.size() as nat)),
         _ => Err(format!(
             "Expected string, bytes, list, set or map for SIZE, but got {}",
             &stack[options.pos].value.to_string()

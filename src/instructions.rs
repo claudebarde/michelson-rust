@@ -15,6 +15,7 @@ mod DIG;
 mod DROP;
 mod DUG;
 mod DUP;
+mod EMPTY_COLLECTION;
 mod EQ;
 mod GE;
 mod GT;
@@ -59,6 +60,9 @@ pub enum Instruction {
     DROP,
     DUG,
     DUP,
+    EMPTY_BIG_MAP,
+    EMPTY_MAP,
+    EMPTY_SET,
     EQ,
     FAILWITH,
     IF,
@@ -107,9 +111,17 @@ pub struct RunOptions {
     pub pos: usize,
 }
 
+// for LEFT and RIGHT instructions
 pub enum LeftOrRight {
     Left,
     Right,
+}
+
+// for EMPTY_SET, EMPTY_MAP and EMPTY_BIGMAP instructions
+pub enum EmptyCollection {
+    Set,
+    Map,
+    Bigmap,
 }
 
 impl Instruction {
@@ -130,6 +142,9 @@ impl Instruction {
             "DROP" => Ok(Instruction::DROP),
             "DUG" => Ok(Instruction::DUG),
             "DUP" => Ok(Instruction::DUP),
+            "EMPTY_BIG_MAP" => Ok(Instruction::EMPTY_BIG_MAP),
+            "EMPTY_MAP" => Ok(Instruction::EMPTY_MAP),
+            "EMPTY_SET" => Ok(Instruction::EMPTY_SET),
             "EQ" => Ok(Instruction::EQ),
             "IF" => Ok(Instruction::IF),
             "IF_LEFT" => Ok(Instruction::IF_LEFT),
@@ -258,6 +273,27 @@ impl Instruction {
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),
             Instruction::DUG => DUG::run(initial_stack, args, options, stack_snapshots),
             Instruction::DUP => DUP::run(initial_stack, args, options, stack_snapshots),
+            Instruction::EMPTY_BIG_MAP => EMPTY_COLLECTION::run(
+                initial_stack,
+                args,
+                options,
+                stack_snapshots,
+                EmptyCollection::Bigmap,
+            ),
+            Instruction::EMPTY_MAP => EMPTY_COLLECTION::run(
+                initial_stack,
+                args,
+                options,
+                stack_snapshots,
+                EmptyCollection::Map,
+            ),
+            Instruction::EMPTY_SET => EMPTY_COLLECTION::run(
+                initial_stack,
+                args,
+                options,
+                stack_snapshots,
+                EmptyCollection::Set,
+            ),
             Instruction::EQ => EQ::run(initial_stack, options, stack_snapshots),
             Instruction::IF => {
                 match IF::run(initial_stack, args, options, stack_snapshots) {

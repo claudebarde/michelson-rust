@@ -85,6 +85,7 @@ pub enum MType {
     List(Box<MType>),
     Set(Box<MType>),
     Map(Box<(MType, MType)>),
+    Big_map(Box<(MType, MType)>),
 }
 
 impl MType {
@@ -134,6 +135,7 @@ impl MType {
             MType::List(_) => String::from("list"),
             MType::Set(_) => String::from("set"),
             MType::Map(_) => String::from("map"),
+            MType::Big_map(_) => String::from("big_map"),
         }
     }
 }
@@ -263,7 +265,6 @@ impl CollectionValue {
 pub struct MapValue {
     pub key_type: MType,
     pub value_type: MType,
-    pub size: usize,
     pub value: map<MValue, MValue>,
 }
 
@@ -276,8 +277,8 @@ impl Hash for MapValue {
 }
 
 impl MapValue {
-    pub fn get_size(&self) -> usize {
-        self.size
+    pub fn size(&self) -> usize {
+        self.value.keys().len()
     }
 }
 
@@ -305,6 +306,7 @@ pub enum MValue {
     List(CollectionValue),
     Set(CollectionValue),
     Map(MapValue),
+    Big_map(MapValue),
 }
 
 impl MValue {
@@ -332,6 +334,7 @@ impl MValue {
             MValue::List(_) => String::from("list"),
             MValue::Set(_) => String::from("set"),
             MValue::Map(_) => String::from("map"),
+            MValue::Big_map(_) => String::from("big_map"),
         }
     }
 
@@ -360,6 +363,9 @@ impl MValue {
             MValue::Set(val) => MType::Set(Box::new(val.m_type.clone())),
             MValue::Map(val) => {
                 MType::Map(Box::new((val.key_type.clone(), val.value_type.clone())))
+            }
+            MValue::Big_map(val) => {
+                MType::Big_map(Box::new((val.key_type.clone(), val.value_type.clone())))
             }
         }
     }
@@ -535,7 +541,6 @@ impl MValue {
         MValue::Map(MapValue {
             key_type,
             value_type,
-            size: 0,
             value: HashMap::new(),
         })
     }
@@ -547,7 +552,30 @@ impl MValue {
         MValue::Map(MapValue {
             key_type,
             value_type,
-            size: elements.len(),
+            value: elements.into_iter().collect(),
+        })
+    }
+
+    /// creates a new empty big_map
+    pub fn new_empty_big_map(key_type: MType, value_type: MType) -> MValue {
+        MValue::Big_map(MapValue {
+            key_type,
+            value_type,
+            value: HashMap::new(),
+        })
+    }
+
+    /// creates a new map with the elements passed as arguments
+    pub fn new_big_map(
+        key_type: MType,
+        value_type: MType,
+        elements: Vec<(MValue, MValue)>,
+    ) -> MValue {
+        // TODO: verify that the element in the map are of the same MType
+        // TODO: verify that the elements can be map keys
+        MValue::Big_map(MapValue {
+            key_type,
+            value_type,
             value: elements.into_iter().collect(),
         })
     }
