@@ -30,7 +30,7 @@ pub fn run(
             if val[0].is_object() {
                 let new_collection = match (val[0]["prim"].as_str(), &instr) {
                     (None, EmptyCollection::Set) => Err(format!(
-                        "Missing 'prim' field for {:?} instruction",
+                        "Missing 'prim' field in argument for {:?} instruction",
                         instruction
                     )),
                     (Some(str), EmptyCollection::Set) => match MType::from_string(str) {
@@ -41,14 +41,14 @@ pub fn run(
                         // there has to be an "args" property with the type of the keys and values
                         match val[0]["args"].as_array() {
                             None => Err(format!(
-                                "Missing 'args' field for {:?} instruction",
+                                "Missing 'args' field in argument for {:?} instruction",
                                 instruction
                             )),
                             Some(args) => {
                                 if args.len() != 2 {
                                     Err(format!(
-                                        "'args' field for {:?} instruction must have 2 elements",
-                                        instruction
+                                        "'args' field for {:?} instruction must have 2 elements, got {:?}",
+                                        instruction, args.len()
                                     ))
                                 } else {
                                     match (args[0]["prim"].as_str(), args[1]["prim"].as_str()) {
@@ -86,7 +86,7 @@ pub fn run(
                 Ok((new_stack, stack_snapshots))
             } else {
                 Err(format!(
-                    "Expected a 'serde_json::Value' of type object for {:?} instruction",
+                    "Expected a 'serde_json::Value' of type object as argument for {:?} instruction",
                     instruction
                 ))
             }
@@ -144,7 +144,13 @@ mod tests {
                     value: Box::new(vec![]),
                 };
                 assert!(stack.len() == 3);
-                assert_eq!(stack[0].value, MValue::Set(expected_set));
+                match &stack[0].value {
+                    MValue::Set(set) => {
+                        assert_eq!(*set, expected_set);
+                        assert_eq!(set.size(), 0);
+                    }
+                    _ => assert!(false),
+                };
                 assert_eq!(stack[0].instruction, Instruction::EMPTY_SET);
             }
             Err(err) => panic!("{}", err),
@@ -189,7 +195,13 @@ mod tests {
                     value: HashMap::new(),
                 };
                 assert!(stack.len() == 3);
-                assert_eq!(stack[0].value, MValue::Map(expected_map));
+                match &stack[0].value {
+                    MValue::Map(map) => {
+                        assert_eq!(map.size(), 0);
+                        assert_eq!(*map, expected_map)
+                    }
+                    _ => assert!(false),
+                };
                 assert_eq!(stack[0].instruction, Instruction::EMPTY_MAP);
             }
             Err(err) => panic!("{}", err),
@@ -238,6 +250,202 @@ mod tests {
                 assert_eq!(stack[0].instruction, Instruction::EMPTY_BIG_MAP);
             }
             Err(err) => panic!("{}", err),
+        }
+    }
+
+    // FAILING
+    #[test]
+    #[should_panic(expected = "Arguments for EMPTY_SET instruction cannot be empty")]
+    fn empty_set_no_args() {
+        let args: Option<&Vec<Value>> = None;
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+                level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 2);
+
+        match run(
+            initial_stack,
+            args,
+            &options,
+            stack_snapshots,
+            EmptyCollection::Set,
+        ) {
+            Ok(_) => assert!(false),
+            Err(err) => panic!("{}", err),
+        }
+    }
+
+    #[test]
+    fn empty_set_wrong_args() {
+        // arg is not an object
+        let arg_value: Value = json!("test");
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+                level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 2);
+
+        match run(
+            initial_stack,
+            args,
+            &options,
+            stack_snapshots,
+            EmptyCollection::Set,
+        ) {
+            Ok(_) => assert!(false),
+            Err(err) => assert_eq!(
+                err,
+                "Expected a 'serde_json::Value' of type object as argument for EMPTY_SET instruction"
+            ),
+        };
+
+        // arg object is wrong
+        let arg_value: Value = json!({ "string": "nat" });
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 2);
+
+        match run(
+            initial_stack,
+            args,
+            &options,
+            stack_snapshots,
+            EmptyCollection::Set,
+        ) {
+            Ok(_) => assert!(false),
+            Err(err) => assert_eq!(
+                err,
+                "Missing 'prim' field in argument for EMPTY_SET instruction"
+            ),
+        }
+    }
+
+    #[test]
+    fn empty_map_wrong_args() {
+        // let arg_value: Value = json!({ "args": [{"prim": "nat"}, {"prim": "string"}] });
+        // wrong serde object
+        let arg_value: Value = json!({ "string": "nat" });
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+                level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 2);
+
+        match run(
+            initial_stack,
+            args,
+            &options,
+            stack_snapshots,
+            EmptyCollection::Map,
+        ) {
+            Ok(_) => assert!(false),
+            Err(err) => assert_eq!(
+                err,
+                "Missing 'args' field in argument for EMPTY_MAP instruction"
+            ),
+        }
+
+        // wrong args length
+        let arg_value: Value =
+            json!({ "args": [{"prim": "nat"}, {"prim": "string"}, {"prim": "string"}] });
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 2);
+
+        match run(
+            initial_stack,
+            args,
+            &options,
+            stack_snapshots,
+            EmptyCollection::Map,
+        ) {
+            Ok(_) => assert!(false),
+            Err(err) => assert_eq!(
+                err,
+                "'args' field for EMPTY_MAP instruction must have 2 elements, got 3"
+            ),
+        }
+
+        // wrong args values
+        let arg_value: Value = json!({ "args": [{"prim": "nat"}, {"test": "string"}] });
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+
+        assert!(initial_stack.len() == 2);
+
+        match run(
+            initial_stack,
+            args,
+            &options,
+            stack_snapshots,
+            EmptyCollection::Map,
+        ) {
+            Ok(_) => assert!(false),
+            Err(err) => assert_eq!(
+                err,
+                "Unexpected argument for EMPTY_MAP instruction in 'args' array"
+            ),
         }
     }
 }
