@@ -35,6 +35,7 @@ Available instructions (implemented and tested):
 - [x] LEVEL
 - [x] LT
 - [x] MUL
+- [x] NEG
 - [x] NEQ
 - [x] NIL
 - [x] NONE
@@ -81,7 +82,6 @@ Available instructions (implemented and tested):
 - [ ] LSR
 - [ ] MAP
 - [ ] MEM
-- [ ] NEG
 - [ ] NEVER
 - [ ] OPEN_CHEST
 - [ ] PACK
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(44 instructions / 94)
+(47 instructions / 94)
