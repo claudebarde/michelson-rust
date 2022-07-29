@@ -38,6 +38,7 @@ Available instructions (implemented and tested):
 - [x] NEQ
 - [x] NIL
 - [x] NONE
+- [x] NOW
 - [x] NOT
 - [x] OR
 - [x] PAIR
@@ -82,7 +83,6 @@ Available instructions (implemented and tested):
 - [ ] MEM
 - [ ] NEG
 - [ ] NEVER
-- [ ] NOW
 - [ ] OPEN_CHEST
 - [ ] PACK
 - [ ] PAIRING_CHECK

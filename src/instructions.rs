@@ -25,6 +25,7 @@ mod INT;
 mod ISNAT;
 mod LE;
 mod LEFT_RIGHT;
+mod LEVEL;
 mod LT;
 mod MUL;
 mod NEG;
@@ -32,6 +33,7 @@ mod NEQ;
 mod NIL;
 mod NONE;
 mod NOT;
+mod NOW;
 mod OR;
 mod PAIR;
 mod PUSH;
@@ -45,7 +47,6 @@ mod SWAP;
 mod UNIT;
 mod UNPAIR;
 mod XOR;
-mod LEVEL;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Instruction {
@@ -82,6 +83,7 @@ pub enum Instruction {
     NIL,
     NONE,
     NOT,
+    NOW,
     OR,
     PAIR,
     PUSH,
@@ -164,6 +166,7 @@ impl Instruction {
             "NIL" => Ok(Instruction::NIL),
             "NONE" => Ok(Instruction::NONE),
             "NOT" => Ok(Instruction::NOT),
+            "NOW" => Ok(Instruction::NOW),
             "OR" => Ok(Instruction::OR),
             "PAIR" => Ok(Instruction::PAIR),
             "PUSH" => Ok(Instruction::PUSH),
@@ -332,6 +335,7 @@ impl Instruction {
             Instruction::NIL => NIL::run(initial_stack, args, options, stack_snapshots),
             Instruction::NONE => NONE::run(initial_stack, args, options, stack_snapshots),
             Instruction::NOT => NOT::run(initial_stack, options, stack_snapshots),
+            Instruction::NOW => NOW::run(initial_stack, options, stack_snapshots),
             Instruction::OR => OR::run(initial_stack, options, stack_snapshots),
             Instruction::PAIR => PAIR::run(initial_stack, options, stack_snapshots),
             Instruction::PUSH => PUSH::run(initial_stack, args, options, stack_snapshots),
