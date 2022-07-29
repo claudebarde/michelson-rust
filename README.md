@@ -32,6 +32,7 @@ Available instructions (implemented and tested):
 - [x] ISNAT
 - [x] LE
 - [x] LEFT
+- [x] LEVEL
 - [x] LT
 - [x] MUL
 - [x] NEQ
@@ -74,7 +75,6 @@ Available instructions (implemented and tested):
 - [ ] JOIN_TICKETS
 - [ ] KECCAK
 - [ ] LAMBDA
-- [ ] LEVEL
 - [ ] LOOP
 - [ ] LSL
 - [ ] LSR

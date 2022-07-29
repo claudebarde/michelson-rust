@@ -45,6 +45,7 @@ mod SWAP;
 mod UNIT;
 mod UNPAIR;
 mod XOR;
+mod LEVEL;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Instruction {
@@ -73,6 +74,7 @@ pub enum Instruction {
     GT,
     LE,
     LEFT,
+    LEVEL,
     LT,
     MUL,
     NEG,
@@ -154,6 +156,7 @@ impl Instruction {
             "GT" => Ok(Instruction::GT),
             "LE" => Ok(Instruction::LE),
             "LEFT" => Ok(Instruction::LEFT),
+            "LEVEL" => Ok(Instruction::LEVEL),
             "LT" => Ok(Instruction::LT),
             "MUL" => Ok(Instruction::MUL),
             "NEG" => Ok(Instruction::NEG),
@@ -321,6 +324,7 @@ impl Instruction {
                 stack_snapshots,
                 LeftOrRight::Left,
             ),
+            Instruction::LEVEL => LEVEL::run(initial_stack, options, stack_snapshots),
             Instruction::LT => LT::run(initial_stack, options, stack_snapshots),
             Instruction::MUL => MUL::run(initial_stack, options, stack_snapshots),
             Instruction::NEG => NEG::run(initial_stack, options, stack_snapshots),
