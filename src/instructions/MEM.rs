@@ -1,3 +1,4 @@
+use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::MValue;
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
@@ -16,16 +17,38 @@ pub fn run(
     // second element on the stack must be a set, a map or a bigmap
     let result = match &stack[options.pos + 1].value {
         MValue::Set(set) => {
-            // finds if value is in the set
-            match set.value.iter().find(|&x| x == el_to_find) {
-                None => Ok(false),
-                Some(_) => Ok(true),
+            // checks if all the values have the same type
+            set.check_elements_type(Instruction::MEM)?;
+            // checks if the value to find is of the right type
+            if set.m_type == el_to_find.get_type() {
+                // finds if value is in the set
+                match set.value.iter().find(|&x| x == el_to_find) {
+                    None => Ok(false),
+                    Some(_) => Ok(true),
+                }
+            } else {
+                Err(display_error(ErrorCode::InvalidType((
+                    vec![set.m_type.clone()],
+                    el_to_find.get_type(),
+                    Instruction::MEM,
+                ))))
             }
         }
-        MValue::Big_map(map) | MValue::Map(map) => match map.value.get(el_to_find) {
-            None => Ok(false),
-            Some(_) => Ok(true),
-        },
+        MValue::Big_map(map) | MValue::Map(map) => {
+            // checks if the value to find is of the right type
+            if map.key_type == el_to_find.get_type() {
+                match map.value.get(el_to_find) {
+                    None => Ok(false),
+                    Some(_) => Ok(true),
+                }
+            } else {
+                Err(display_error(ErrorCode::InvalidType((
+                    vec![map.key_type.clone()],
+                    el_to_find.get_type(),
+                    Instruction::MEM,
+                ))))
+            }
+        }
         _ => Err(format!(
             "Invalid type for `MEM` expected set, map or big_map, but got {:?}",
             stack[options.pos].value.get_type()
@@ -241,6 +264,147 @@ mod tests {
                 assert_eq!(stack[0].value, MValue::Bool(true));
                 assert_eq!(stack[0].instruction, Instruction::MEM);
             }
+        }
+    }
+
+    // FAILING
+    #[test]
+    fn mem_set_wrong_stack_depth() {
+        // empty stack
+        let initial_stack: Stack = vec![];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+                level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 0);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => assert_eq!(
+                err,
+                String::from(
+                    "Unexpected stack length, expected a length of 2 for instruction MEM, got 0"
+                )
+            ),
+            Ok(_) => assert!(false),
+        }
+
+        // 1 element in the stack
+        let initial_stack: Stack = vec![StackElement::new(MValue::Nat(9), Instruction::INIT)];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+                level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 1);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => assert_eq!(
+                err,
+                String::from(
+                    "Unexpected stack length, expected a length of 2 for instruction MEM, got 1"
+                )
+            ),
+            Ok(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn mem_set_wrong_stack_types() {
+        // empty stack
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(8), Instruction::INIT),
+            StackElement::new(
+                MValue::new_set(
+                    vec![MValue::Nat(7), MValue::Nat(6), MValue::Nat(8)],
+                    MType::Nat,
+                ),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Nat(5), Instruction::INIT),
+            StackElement::new(MValue::Int(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+                level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 4);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => assert_eq!(
+                err,
+                String::from("Invalid type for `MEM` expected nat, but got int")
+            ),
+            Ok(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn mem_map_wrong_type() {
+        // if the element is in the set
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(8), Instruction::INIT),
+            StackElement::new(
+                MValue::new_map(
+                    MType::Nat,
+                    MType::Int,
+                    vec![
+                        (MValue::Nat(7), MValue::Int(7)),
+                        (MValue::Nat(6), MValue::Int(6)),
+                        (MValue::Nat(8), MValue::Int(8)),
+                    ],
+                ),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Nat(5), Instruction::INIT),
+            StackElement::new(MValue::Int(6), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext {
+                amount: 0,
+                sender: String::from("test_sender"),
+                source: String::from("test_source"),
+                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
+                balance: 50_000_000,
+                level: 11,
+            },
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 4);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => assert_eq!(
+                err,
+                String::from("Invalid type for `MEM` expected nat, but got int")
+            ),
+            Ok(_) => assert!(false),
         }
     }
 }
