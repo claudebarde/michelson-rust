@@ -118,14 +118,7 @@ mod tests {
         ];
         let stack_snapshots = vec![];
         let options = RunOptions {
-            context: RunOptionsContext {
-                amount: 0,
-                sender: String::from("test_sender"),
-                source: String::from("test_source"),
-                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
-                balance: 50_000_000,
-                level: 11,
-            },
+            context: RunOptionsContext::mock(),
             pos: 0,
         };
 
@@ -168,14 +161,7 @@ mod tests {
         ];
         let stack_snapshots = vec![];
         let options = RunOptions {
-            context: RunOptionsContext {
-                amount: 0,
-                sender: String::from("test_sender"),
-                source: String::from("test_source"),
-                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
-                balance: 50_000_000,
-                level: 11,
-            },
+            context: RunOptionsContext::mock(),
             pos: 0,
         };
 
@@ -219,14 +205,7 @@ mod tests {
         ];
         let stack_snapshots = vec![];
         let options = RunOptions {
-            context: RunOptionsContext {
-                amount: 0,
-                sender: String::from("test_sender"),
-                source: String::from("test_source"),
-                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
-                balance: 50_000_000,
-                level: 11,
-            },
+            context: RunOptionsContext::mock(),
             pos: 0,
         };
 
@@ -264,14 +243,7 @@ mod tests {
         ];
         let stack_snapshots = vec![];
         let options = RunOptions {
-            context: RunOptionsContext {
-                amount: 0,
-                sender: String::from("test_sender"),
-                source: String::from("test_source"),
-                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
-                balance: 50_000_000,
-                level: 11,
-            },
+            context: RunOptionsContext::mock(),
             pos: 0,
         };
 
@@ -301,14 +273,7 @@ mod tests {
         ];
         let stack_snapshots = vec![];
         let options = RunOptions {
-            context: RunOptionsContext {
-                amount: 0,
-                sender: String::from("test_sender"),
-                source: String::from("test_source"),
-                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
-                balance: 50_000_000,
-                level: 11,
-            },
+            context: RunOptionsContext::mock(),
             pos: 0,
         };
 
@@ -368,14 +333,7 @@ mod tests {
         ];
         let stack_snapshots = vec![];
         let options = RunOptions {
-            context: RunOptionsContext {
-                amount: 0,
-                sender: String::from("test_sender"),
-                source: String::from("test_source"),
-                self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
-                balance: 50_000_000,
-                level: 11,
-            },
+            context: RunOptionsContext::mock(),
             pos: 0,
         };
 

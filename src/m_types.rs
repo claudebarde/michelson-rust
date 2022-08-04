@@ -590,3 +590,27 @@ impl MValue {
         MValue::Bytes(val.to_string())
     }
 }
+
+/**
+ * TESTS
+ */
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mtype_from_string() {
+        // simple type
+        match MType::from_string("nat") {
+            Ok(res) => assert_eq!(res, MType::Nat),
+            Err(_) => assert!(false),
+        }
+
+        // pair type
+        // match MType::from_string("pair nat int") {
+        //     Ok(res) => assert_eq!(res, MType::Pair(Box::new((MType::Nat, MType::Int)))),
+        //     Err(_) => assert!(false),
+        // }
+    }
+}

@@ -67,6 +67,7 @@ mod tests {
                 self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
                 balance: 50_000_000,
                 level: 11,
+                chain_id: String::from("chain_id"),
             },
             pos: 0,
         };
@@ -99,6 +100,7 @@ mod tests {
                 self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
                 balance: 50_000_000,
                 level: 11,
+                chain_id: String::from("chain_id"),
             },
             pos: 1,
         };
@@ -133,6 +135,7 @@ mod tests {
                 self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
                 balance: 50_000_000,
                 level: 11,
+                chain_id: String::from("chain_id"),
             },
             pos: 0,
         };
@@ -165,6 +168,7 @@ mod tests {
                 self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
                 balance: 50_000_000,
                 level: 11,
+                chain_id: String::from("chain_id"),
             },
             pos: 0,
         };
@@ -196,6 +200,7 @@ mod tests {
                 self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
                 balance: 50_000_000,
                 level: 11,
+                chain_id: String::from("chain_id"),
             },
             pos: 1,
         };
@@ -225,6 +230,7 @@ mod tests {
                 self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
                 balance: 50_000_000,
                 level: 11,
+                chain_id: String::from("chain_id"),
             },
             pos: 0,
         };

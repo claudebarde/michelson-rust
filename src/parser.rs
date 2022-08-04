@@ -415,14 +415,7 @@ pub fn run(json: &str, mut stack: Stack, mut stack_snapshots: StackSnapshots) ->
     // sets default options
     // TODO: it may be better to pass these options as a parameter
     let options = RunOptions {
-        context: RunOptionsContext {
-            amount: 0,
-            sender: String::from("tz1Me1MGhK7taay748h4gPnX2cXvbgL6xsYL"),
-            source: String::from("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"),
-            self_address: String::from("KT1L7GvUxZH5tfa6cgZKnH6vpp2uVxnFVHKu"),
-            balance: 50_000_000,
-            level: 11,
-        }, 
+        context: RunOptionsContext::mock(), 
         pos: 0
     };
     // loops through the JSON value
