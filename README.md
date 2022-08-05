@@ -49,6 +49,7 @@ Available instructions (implemented and tested):
 - [x] SELF_ADDRESS
 - [x] SENDER
 - [x] SIZE
+- [x] SLICE
 - [x] SOME
 - [x] SOURCE
 - [x] SUB
@@ -95,7 +96,6 @@ Available instructions (implemented and tested):
 - [ ] SHA3
 - [ ] SHA256
 - [ ] SHA512
-- [ ] SLICE
 - [ ] SPLIT_TICKET
 - [ ] TICKET
 - [ ] TOTAL_VOTING_POWER
