@@ -32,6 +32,7 @@ mod MEM;
 mod MUL;
 mod NEG;
 mod NEQ;
+mod NEVER;
 mod NIL;
 mod NONE;
 mod NOT;
@@ -85,6 +86,7 @@ pub enum Instruction {
     MUL,
     NEG,
     NEQ,
+    NEVER,
     NIL,
     NONE,
     NOT,
@@ -186,6 +188,7 @@ impl Instruction {
             "MUL" => Ok(Instruction::MUL),
             "NEG" => Ok(Instruction::NEG),
             "NEQ" => Ok(Instruction::NEQ),
+            "NEVER" => Ok(Instruction::NEVER),
             "NIL" => Ok(Instruction::NIL),
             "NONE" => Ok(Instruction::NONE),
             "NOT" => Ok(Instruction::NOT),
@@ -358,6 +361,7 @@ impl Instruction {
             Instruction::MUL => MUL::run(initial_stack, options, stack_snapshots),
             Instruction::NEG => NEG::run(initial_stack, options, stack_snapshots),
             Instruction::NEQ => NEQ::run(initial_stack, options, stack_snapshots),
+            Instruction::NEVER => NEVER::run(initial_stack, options, stack_snapshots),
             Instruction::NIL => NIL::run(initial_stack, args, options, stack_snapshots),
             Instruction::NONE => NONE::run(initial_stack, args, options, stack_snapshots),
             Instruction::NOT => NOT::run(initial_stack, options, stack_snapshots),

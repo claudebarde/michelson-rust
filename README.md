@@ -39,6 +39,7 @@ Available instructions (implemented and tested):
 - [x] MUL
 - [x] NEG
 - [x] NEQ
+- [x] NEVER
 - [x] NIL
 - [x] NONE
 - [x] NOW
@@ -83,7 +84,6 @@ Available instructions (implemented and tested):
 - [ ] LSL
 - [ ] LSR
 - [ ] MAP
-- [ ] NEVER
 - [ ] OPEN_CHEST
 - [ ] PACK
 - [ ] PAIRING_CHECK
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(50 instructions / 94)
+(51 instructions / 94)
