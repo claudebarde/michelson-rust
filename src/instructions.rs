@@ -8,6 +8,7 @@ mod ADD;
 mod AMOUNT;
 mod AND;
 mod BALANCE;
+mod CHAIN_ID;
 mod COMPARE;
 mod CONCAT;
 mod CONS;
@@ -57,6 +58,7 @@ pub enum Instruction {
     AND,
     BALANCE,
     AMOUNT,
+    CHAIN_ID,
     COMPARE,
     CONCAT,
     CONS,
@@ -158,6 +160,7 @@ impl Instruction {
             "AND" => Ok(Instruction::AND),
             "AMOUNT" => Ok(Instruction::AMOUNT),
             "BALANCE" => Ok(Instruction::BALANCE),
+            "CHAIN_ID" => Ok(Instruction::CHAIN_ID),
             "COMPARE" => Ok(Instruction::COMPARE),
             "CONCAT" => Ok(Instruction::CONCAT),
             "CONS" => Ok(Instruction::CONS),
@@ -293,6 +296,7 @@ impl Instruction {
             Instruction::AND => AND::run(initial_stack, options, stack_snapshots),
             Instruction::AMOUNT => AMOUNT::run(initial_stack, options, stack_snapshots),
             Instruction::BALANCE => BALANCE::run(initial_stack, options, stack_snapshots),
+            Instruction::CHAIN_ID => CHAIN_ID::run(initial_stack, options, stack_snapshots),
             Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
             Instruction::CONCAT => CONCAT::run(initial_stack, options, stack_snapshots),
             Instruction::CONS => CONS::run(initial_stack, options, stack_snapshots),

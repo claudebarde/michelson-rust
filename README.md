@@ -12,6 +12,7 @@ Available instructions (implemented and tested):
 - [x] AND
 - [x] AMOUNT
 - [x] BALANCE
+- [x] CHAIN_ID
 - [x] COMPARE
 - [x] CONCAT
 - [x] CONS
@@ -62,7 +63,6 @@ Available instructions (implemented and tested):
 - [ ] APPLY
 - [ ] BLAKE2B
 - [ ] CAST
-- [ ] CHAIN_ID
 - [ ] CHECK_SIGNATURE
 - [ ] CONTRACT
 - [ ] CREATE_CONTRACT
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(48 instructions / 94)
+(50 instructions / 94)
