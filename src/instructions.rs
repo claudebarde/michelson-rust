@@ -19,6 +19,7 @@ mod DUP;
 mod EMPTY_COLLECTION;
 mod EQ;
 mod GE;
+mod GET;
 mod GT;
 mod IF;
 mod IF_LEFT;
@@ -72,12 +73,13 @@ pub enum Instruction {
     EMPTY_SET,
     EQ,
     FAILWITH,
+    GE,
+    GET,
+    GT,
     IF,
     IF_LEFT,
     INT,
     ISNAT,
-    GE,
-    GT,
     LE,
     LEFT,
     LEVEL,
@@ -179,6 +181,7 @@ impl Instruction {
             "INT" => Ok(Instruction::INT),
             "ISNAT" => Ok(Instruction::ISNAT),
             "GE" => Ok(Instruction::GE),
+            "GET" => Ok(Instruction::GET),
             "GT" => Ok(Instruction::GT),
             "LE" => Ok(Instruction::LE),
             "LEFT" => Ok(Instruction::LEFT),
@@ -329,6 +332,9 @@ impl Instruction {
                 EmptyCollection::Set,
             ),
             Instruction::EQ => EQ::run(initial_stack, options, stack_snapshots),
+            Instruction::GE => GE::run(initial_stack, options, stack_snapshots),
+            Instruction::GET => GET::run(initial_stack, args, options, stack_snapshots),
+            Instruction::GT => GT::run(initial_stack, options, stack_snapshots),
             Instruction::IF => {
                 match IF::run(initial_stack, args, options, stack_snapshots) {
                     // the boolean value in RunResult is not necessary here
@@ -345,8 +351,6 @@ impl Instruction {
             }
             Instruction::INT => INT::run(initial_stack, options, stack_snapshots),
             Instruction::ISNAT => ISNAT::run(initial_stack, options, stack_snapshots),
-            Instruction::GE => GE::run(initial_stack, options, stack_snapshots),
-            Instruction::GT => GT::run(initial_stack, options, stack_snapshots),
             Instruction::LE => LE::run(initial_stack, options, stack_snapshots),
             Instruction::LEFT => LEFT_RIGHT::run(
                 initial_stack,
