@@ -197,6 +197,7 @@ pub struct PairValue {
 }
 
 impl PairValue {
+    /// creates a new pair from the provided values
     pub fn new(val1: MValue, val2: MValue) -> MValue {
         MValue::Pair(PairValue {
             m_type: (val1.get_type(), val2.get_type()),
@@ -204,8 +205,27 @@ impl PairValue {
         })
     }
 
+    /// unpairs a pair
     pub fn unpair(&self) -> (MValue, MValue) {
         *self.value.clone()
+    }
+
+    /// checks if a pair is right-combed
+    /// if it is, returns Some(pair depth), if it isn't, returns None
+    pub fn check_right_comb_depth(&self) -> Option<usize> {
+        fn right_combed(pair: &PairValue, acc: usize) -> usize {
+            match &*pair.value {
+                (_, MValue::Pair(pair)) => right_combed(&pair, acc + 1),
+                _ => acc,
+            }
+        }
+        let acc = right_combed(self, 0);
+
+        if acc == 0 {
+            return None;
+        } else {
+            return Some(acc);
+        }
     }
 }
 

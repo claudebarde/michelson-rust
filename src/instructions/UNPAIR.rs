@@ -22,6 +22,7 @@ fn check_stack(stack: &Stack, pos: usize) -> Result<(), String> {
         _ => Err(display_error(ErrorCode::WrongType((
             String::from("pair"),
             MValue::to_string(&stack[0].value),
+            Instruction::UNPAIR,
         )))),
     }
 }

@@ -52,6 +52,7 @@ pub fn run(
         _ => Err(display_error(ErrorCode::WrongType((
             String::from("bool"),
             stack[options.pos].value.to_string(),
+            Instruction::IF,
         )))),
     }
 }

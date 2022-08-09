@@ -12,6 +12,7 @@ pub fn run(
     options: &RunOptions,
     mut stack_snapshots: StackSnapshots,
 ) -> Result<(Stack, StackSnapshots), String> {
+    //TODO: handle DROP n
     // checks the stack
     match stack.check_depth(options.pos + 1, Instruction::DROP) {
         Ok(_) => (),

@@ -1,6 +1,6 @@
 use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{MType, MValue, OptionValue};
+use crate::m_types::{MType, MValue, OptionValue, PairValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use serde_json::Value;
 
@@ -43,6 +43,7 @@ pub fn run(
                         Err(display_error(ErrorCode::WrongType((
                             map.key_type.to_string(),
                             key.get_type().to_string(),
+                            Instruction::GET
                         ))))
                     }
                 }
@@ -54,9 +55,55 @@ pub fn run(
         }
         Some(arg) => {
             // this will get values in nested pairs
+            // checks the stack
             stack.check_depth(options.pos + 1, Instruction::GET)?;
-
-            Ok(stack)
+            // verifies that the element on the stack is a pair
+            match &stack[options.pos].value {
+                MValue::Pair(pair) => {
+                    // verifies that the argument is correct
+                    if arg.len() == 1 {
+                        if arg[0].is_object() {
+                            match arg[0]["int"].as_str() {
+                                None => Err(String::from("Expected argument for GET instruction to be an object with an 'int' property")),
+                                Some(val) => {
+                                    match val.parse::<usize>() {
+                                        Err(err) => Err(format!("Expected argument for GET instruction to be a number, but got {} instead ({:?})", val, err)),
+                                        Ok(num_val) => {
+                                            // checks if the pair is right-combed with the right depth
+                                            let new_val: MValue = match &pair.check_right_comb_depth() {
+                                                None => if num_val == 0 
+                                                    { 
+                                                        Ok(MValue::Pair(pair.clone())) 
+                                                    } else { 
+                                                        Err(format!("The pair for the instruction GET doesn't have the correct depth for the provided argument: {}", num_val)) 
+                                                    },
+                                                Some(depth) => {
+                                                    Ok(MValue::Pair(pair.clone()))
+                                                }
+                                            }?;
+                                            Ok(stack)
+                                        }                                        
+                                    }
+                                }
+                            }
+                        } else {
+                            Err(String::from(
+                                "Expected a 'serde_json::Value' of type object for GET instruction",
+                            ))
+                        }
+                    } else {
+                        Err(format!(
+                            "Unexpected length of arg vector for GET instruction, expected 1, but got {}",
+                            arg.len()
+                        ))
+                    }
+                }
+                _ => Err(
+                    display_error(
+                        ErrorCode::WrongType((String::from("pair"), stack[options.pos].value.get_type().to_string(), Instruction::GET))
+                    )
+                )
+            }
         }
     }?;
 

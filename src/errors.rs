@@ -13,7 +13,7 @@ pub enum ErrorCode {
     InvalidStack((usize, MType, MType, Instruction)),
     InvalidType((Vec<MType>, MType, Instruction)),
     Unknown,
-    WrongType((String, String)),
+    WrongType((String, String, Instruction)),
 }
 
 pub fn display_error(error_code: ErrorCode) -> String {
@@ -22,8 +22,11 @@ pub fn display_error(error_code: ErrorCode) -> String {
             "Unexpected stack length, expected a length of {} for instruction {:?}, got {}",
             expected, instruction, got
         ),
-        ErrorCode::WrongType((expected, got)) => {
-            format!("Wrong type, expected `{}`, got `{}`", expected, got)
+        ErrorCode::WrongType((expected, got, instruction)) => {
+            format!(
+                "Wrong type, expected `{}` for instruction {:?}, got `{}`",
+                expected, instruction, got
+            )
         }
         ErrorCode::Unknown => String::from("An unknown error has occured"),
         ErrorCode::UnexpectedArgsNumber((expected, got)) => format!(

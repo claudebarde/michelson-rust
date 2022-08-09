@@ -55,6 +55,7 @@ pub fn run(
         _ => Err(display_error(ErrorCode::WrongType((
             String::from("or"),
             stack[options.pos].value.to_string(),
+            Instruction::IF_LEFT,
         )))),
     }
 }
