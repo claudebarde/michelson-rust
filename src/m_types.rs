@@ -227,6 +227,27 @@ impl PairValue {
             return Some(acc);
         }
     }
+
+    /// unfold right-combed nested pairs
+    pub fn unfold(&self, depth: usize) -> Result<PairValue, String> {
+        match &self.check_right_comb_depth() {
+            None => Err(format!("The pair is not right-combed: {:?}", &self.value)),
+            Some(pair_depth) => {
+                if *pair_depth < depth {
+                    Err(format!(
+                        "The pair is not deep enough, expected a depth of {}, but got {}",
+                        depth, pair_depth
+                    ))
+                } else {
+                    if depth == 0 {
+                        return Ok(self.clone());
+                    } else {
+                        self.unfold(depth - 1)
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

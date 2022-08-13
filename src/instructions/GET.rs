@@ -78,10 +78,20 @@ pub fn run(
                                                         Err(format!("The pair for the instruction GET doesn't have the correct depth for the provided argument: {}", num_val)) 
                                                     },
                                                 Some(depth) => {
-                                                    Ok(MValue::Pair(pair.clone()))
+                                                    // checks if the depth of the pair matches the requested depth
+                                                    let required_depth = if num_val % 2 != 0 { (num_val + 1) / 2 } else { num_val / 2 };
+                                                    if required_depth > *depth {
+                                                        Err(format!("The pair is not deep enough for instruction GET, expected a depth of {}, but got {}", required_depth, depth))
+                                                    } else {
+                                                        match pair.unfold(required_depth) {
+                                                            Err(err) => Err(err),
+                                                            Ok(pair_val) => Ok(MValue::Pair(pair_val))
+                                                        }
+                                                    }
                                                 }
                                             }?;
-                                            Ok(stack)
+
+                                            Ok(stack.replace(vec![StackElement::new(new_val, Instruction::GET)], options.pos))
                                         }                                        
                                     }
                                 }
