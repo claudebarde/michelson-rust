@@ -1005,8 +1005,8 @@ mod tests {
     fn compare_pair_pair() {
         // should output 0
         let initial_stack: Stack = vec![
-            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
-            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(MValue::Pair(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos")))), Instruction::INIT),
+            StackElement::new(MValue::Pair(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos")))), Instruction::INIT),
             StackElement::new(MValue::Nat(6), Instruction::INIT),
         ];
         let stack_snapshots = vec![];
@@ -1030,8 +1030,8 @@ mod tests {
 
         // should output -1
         let initial_stack: Stack = vec![
-            StackElement::new(PairValue::new(MValue::Int(8), MValue::String(String::from("tezos"))), Instruction::INIT),
-            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(MValue::Pair(PairValue::new(MValue::Int(8), MValue::String(String::from("tezos")))), Instruction::INIT),
+            StackElement::new(MValue::Pair(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos")))), Instruction::INIT),
             StackElement::new(MValue::Nat(6), Instruction::INIT),
         ];
         let stack_snapshots = vec![];
@@ -1051,8 +1051,8 @@ mod tests {
 
         // should output 1
         let initial_stack: Stack = vec![
-            StackElement::new(PairValue::new(MValue::Int(18), MValue::String(String::from("tezos"))), Instruction::INIT),
-            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(MValue::Pair(PairValue::new(MValue::Int(18), MValue::String(String::from("tezos")))), Instruction::INIT),
+            StackElement::new(MValue::Pair(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos")))), Instruction::INIT),
             StackElement::new(MValue::Nat(6), Instruction::INIT),
         ];
         let stack_snapshots = vec![];
@@ -1072,8 +1072,8 @@ mod tests {
 
         // should output 1
         let initial_stack: Stack = vec![
-            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
-            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("taquito"))), Instruction::INIT),
+            StackElement::new(MValue::Pair(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos")))), Instruction::INIT),
+            StackElement::new(MValue::Pair(PairValue::new(MValue::Int(9), MValue::String(String::from("taquito")))), Instruction::INIT),
             StackElement::new(MValue::Nat(6), Instruction::INIT),
         ];
         let stack_snapshots = vec![];
@@ -1093,8 +1093,8 @@ mod tests {
 
         // should output -1
         let initial_stack: Stack = vec![
-            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("taquito"))), Instruction::INIT),
-            StackElement::new(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos"))), Instruction::INIT),
+            StackElement::new(MValue::Pair(PairValue::new(MValue::Int(9), MValue::String(String::from("taquito")))), Instruction::INIT),
+            StackElement::new(MValue::Pair(PairValue::new(MValue::Int(9), MValue::String(String::from("tezos")))), Instruction::INIT),
             StackElement::new(MValue::Nat(6), Instruction::INIT),
         ];
         let stack_snapshots = vec![];

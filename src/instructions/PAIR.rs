@@ -14,10 +14,10 @@ pub fn run(
         Ok(_) => {
             // TODO: make pair work with an argument
             // creates the new pair
-            let new_pair: MValue = PairValue::new(
+            let new_pair: MValue = MValue::Pair(PairValue::new(
                 stack[options.pos].value.clone(),
                 stack[options.pos + 1].value.clone(),
-            );
+            ));
             // drops the 2 elements from the stack
             let (_, new_stack) = stack.remove_at(options.pos);
             let (_, new_stack) = new_stack.remove_at(options.pos);

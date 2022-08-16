@@ -211,15 +211,15 @@ mod tests {
         // if the element is in the set
         let initial_stack: Stack = vec![
             StackElement::new(
-                PairValue::new(MValue::Nat(7), MValue::Int(11)),
+                MValue::Pair(PairValue::new(MValue::Nat(7), MValue::Int(11))),
                 Instruction::INIT,
             ),
             StackElement::new(
                 MValue::new_set(
                     vec![
-                        PairValue::new(MValue::Nat(8), MValue::Int(11)),
-                        PairValue::new(MValue::Nat(7), MValue::Int(11)),
-                        PairValue::new(MValue::Nat(7), MValue::Int(12)),
+                        MValue::Pair(PairValue::new(MValue::Nat(8), MValue::Int(11))),
+                        MValue::Pair(PairValue::new(MValue::Nat(7), MValue::Int(11))),
+                        MValue::Pair(PairValue::new(MValue::Nat(7), MValue::Int(12))),
                     ],
                     MType::Pair(Box::new((MType::Nat, MType::Int))),
                 ),

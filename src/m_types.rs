@@ -198,11 +198,11 @@ pub struct PairValue {
 
 impl PairValue {
     /// creates a new pair from the provided values
-    pub fn new(val1: MValue, val2: MValue) -> MValue {
-        MValue::Pair(PairValue {
+    pub fn new(val1: MValue, val2: MValue) -> PairValue {
+        PairValue {
             m_type: (val1.get_type(), val2.get_type()),
             value: Box::new((val1, val2)),
-        })
+        }
     }
 
     /// unpairs a pair
@@ -219,7 +219,7 @@ impl PairValue {
                 _ => acc,
             }
         }
-        let acc = right_combed(self, 0);
+        let acc = right_combed(self, 1);
 
         if acc == 0 {
             return None;
@@ -239,10 +239,13 @@ impl PairValue {
                         depth, pair_depth
                     ))
                 } else {
-                    if depth == 0 {
+                    if depth == 1 {
                         return Ok(self.clone());
                     } else {
-                        self.unfold(depth - 1)
+                        match &self.value.1 {
+                            MValue::Pair(pair) => pair.unfold(depth - 1),
+                            _ => Err(String::from("The value in the right field of the pair was expected to be a pair")),
+                        }
                     }
                 }
             }
