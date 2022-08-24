@@ -48,7 +48,7 @@ pub fn run(
                     }
                 }
                 _ => Err(format!(
-                    "Invalid type for `GET n` expected 'map' or 'big_map', but got {}",
+                    "Invalid type for `GET` expected 'map' or 'big_map', but got {}",
                     stack[options.pos + 1].value.get_type().to_string()
                 )),
             }
@@ -67,7 +67,7 @@ pub fn run(
                                 None => Err(String::from("Expected argument for GET instruction to be an object with an 'int' property")),
                                 Some(val) => {
                                     match val.parse::<usize>() {
-                                        Err(err) => Err(format!("Expected argument for GET instruction to be a number, but got {} instead ({:?})", val, err)),
+                                        Err(err) => Err(format!("Expected argument for GET instruction to be a number, but got \"{}\" instead ({:?})", val, err)),
                                         Ok(el_pos) => {
                                             // checks if the pair is right-combed with the right depth
                                             let new_val: MValue = match &pair.check_right_comb_depth() {
@@ -248,6 +248,268 @@ mod tests {
                 assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
                 assert_eq!(stack[2].instruction, Instruction::INIT);
             }
+        }
+    }
+
+    #[test]
+    fn get_map_none_success() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(16), Instruction::INIT),
+            StackElement::new(
+                MValue::new_map(
+                    MType::Int, 
+                    MType::String, 
+                    vec![
+                        (MValue::Int(5), MValue::new_string("tezos")),
+                        (MValue::Int(6), MValue::new_string("taquito")),
+                        (MValue::Int(7), MValue::new_string("hello")),
+                        (MValue::Int(8), MValue::new_string("world")),
+                        (MValue::Int(9), MValue::new_string("blockchain")),
+                    ]), 
+                Instruction::INIT
+            ),
+            StackElement::new(MValue::Int(8), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+        let args: Option<&Vec<Value>> = None;
+
+        assert!(initial_stack.len() == 4);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 3);
+                assert_eq!(stack[0].value, MValue::Option(OptionValue::new(None, MType::String)));
+                assert_eq!(stack[0].instruction, Instruction::GET);
+                assert_eq!(stack[1].value, MValue::Int(8));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+                assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
+                assert_eq!(stack[2].instruction, Instruction::INIT);
+            }
+        }
+    }
+
+    // FAILING
+    #[test]
+    fn get_map_wrong_stack() {
+        // wrong stack depth
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::new_map(
+                    MType::Int, 
+                    MType::String, 
+                    vec![
+                        (MValue::Int(5), MValue::new_string("tezos")),
+                        (MValue::Int(6), MValue::new_string("taquito")),
+                        (MValue::Int(7), MValue::new_string("hello")),
+                        (MValue::Int(8), MValue::new_string("world")),
+                        (MValue::Int(9), MValue::new_string("blockchain")),
+                    ]), 
+                Instruction::INIT
+            )
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+        let args: Option<&Vec<Value>> = None;
+
+        assert!(initial_stack.len() == 1);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, String::from("Unexpected stack length, expected a length of 2 for instruction GET, got 1")),
+            Ok(_) => assert!(false)
+        }
+
+        // wrong elements in the stack
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(8), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let args: Option<&Vec<Value>> = None;
+
+        assert!(initial_stack.len() == 2);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, String::from("Invalid type for `GET` expected 'map' or 'big_map', but got mutez")),
+            Ok(_) => assert!(false)
+        }
+    }
+
+    // wrong key type
+    #[test]
+    fn get_map_wrong_key_type() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Nat(6), Instruction::INIT),
+            StackElement::new(
+                MValue::new_map(
+                    MType::Int, 
+                    MType::String, 
+                    vec![
+                        (MValue::Int(5), MValue::new_string("tezos")),
+                        (MValue::Int(6), MValue::new_string("taquito")),
+                        (MValue::Int(7), MValue::new_string("hello")),
+                        (MValue::Int(8), MValue::new_string("world")),
+                        (MValue::Int(9), MValue::new_string("blockchain")),
+                    ]), 
+                Instruction::INIT
+            ),
+            StackElement::new(MValue::Int(8), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+        let args: Option<&Vec<Value>> = None;
+
+        assert!(initial_stack.len() == 4);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, String::from("Wrong type, expected `int` for instruction GET, got `nat`")),
+            Ok(_) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn get_pair_wrong_stack() {
+        // wrong stack depth
+        let initial_stack: Stack = vec![];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+        let arg_value: Value = json!({ "int": "5" });
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+
+        assert!(initial_stack.len() == 0);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, String::from("Unexpected stack length, expected a length of 1 for instruction GET, got 0")),
+            Ok(_) => assert!(false)
+        }
+
+        // wrong elements in the stack
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(8), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let arg_value: Value = json!({ "int": "5" });
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+
+        assert!(initial_stack.len() == 2);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, String::from("Wrong type, expected `pair` for instruction GET, got `int`")),
+            Ok(_) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn get_pair_wrong_depth() {
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Pair(PairValue::new(
+                    MValue::Nat(9),
+                    MValue::Nat(12),
+                )), 
+                Instruction::INIT
+            ),
+            StackElement::new(MValue::Int(8), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+        let arg_value: Value = json!({ "int": "5" });
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, String::from("The pair is not deep enough for instruction GET, expected a depth of 3, but got 1")),
+            Ok(_) => assert!(false)
+        }
+    }
+
+    // wrong GET argument
+    #[test]
+    fn get_pair_wrong_get_arg() {
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Pair(PairValue::new(
+                    MValue::Nat(9),
+                    MValue::Pair(PairValue::new(
+                        MValue::Nat(11),
+                        MValue::Pair(PairValue::new(
+                            MValue::Nat(12),
+                            MValue::new_string("taquito")
+                        ))
+                    ))
+                )), 
+                Instruction::INIT
+            ),
+            StackElement::new(MValue::Int(8), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+        let arg_value: Value = json!({ "string": "5" });
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, String::from("Expected argument for GET instruction to be an object with an 'int' property")),
+            Ok(_) => assert!(false)
+        }
+
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Pair(PairValue::new(
+                    MValue::Nat(9),
+                    MValue::Pair(PairValue::new(
+                        MValue::Nat(11),
+                        MValue::Pair(PairValue::new(
+                            MValue::Nat(12),
+                            MValue::new_string("taquito")
+                        ))
+                    ))
+                )), 
+                Instruction::INIT
+            ),
+            StackElement::new(MValue::Int(8), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let arg_value: Value = json!({ "int": "test" });
+        let arg_vec = vec![arg_value];
+        let args: Option<&Vec<Value>> = Some(&arg_vec);
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, args, &options, stack_snapshots) {
+            Err(err) => assert_eq!(err, String::from("Expected argument for GET instruction to be a number, but got \"test\" instead (ParseIntError { kind: InvalidDigit })")),
+            Ok(_) => assert!(false)
         }
     }
 }

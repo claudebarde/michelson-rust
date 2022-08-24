@@ -26,6 +26,7 @@ Available instructions (implemented and tested):
 - [x] EQ
 - [x] FAILWITH
 - [x] GE
+- [x] GET
 - [x] GT
 - [x] IF
 - [x] IF_LEFT
@@ -70,7 +71,6 @@ Available instructions (implemented and tested):
 - [ ] DIP
 - [ ] EDIV
 - [ ] EXEC
-- [ ] GET
 - [ ] HASH_KEY
 - [ ] IF_CONS
 - [ ] IF_NONE
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(51 instructions / 94)
+(52 instructions / 94)
