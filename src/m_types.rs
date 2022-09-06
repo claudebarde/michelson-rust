@@ -79,6 +79,7 @@ pub enum MType {
     Address,
     Operation,
     Ticket,
+    Contract(Box<(MType, MType)>),
     Option(Box<MType>),
     Or(Box<(MType, MType)>),
     Pair(Box<(MType, MType)>),
@@ -129,6 +130,7 @@ impl MType {
             MType::Address => String::from("address"),
             MType::Operation => String::from("operation"),
             MType::Ticket => String::from("ticket"),
+            MType::Contract(_) => String::from("contract"),
             MType::Option(_) => String::from("option"),
             MType::Or(_) => String::from("or"),
             MType::Pair(_) => String::from("pair"),
@@ -327,6 +329,26 @@ impl MapValue {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ContractValue {
+    address: address,
+    parameter: MType,
+}
+
+impl ContractValue {
+    pub fn new(address: address, parameter: MType) -> ContractValue {
+        ContractValue { address, parameter }
+    }
+
+    pub fn get_address(&self) -> &address {
+        &self.address
+    }
+
+    pub fn get_param(&self) -> &MType {
+        &self.parameter
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum MValue {
     Unit,
     Never,
@@ -343,6 +365,7 @@ pub enum MValue {
     Timestamp(timestamp),
     Address(address),
     Operation(operation),
+    Contract(Box<ContractValue>),
     Ticket(Box<Ticket>),
     Option(OptionValue),
     Or(OrValue),
@@ -372,6 +395,7 @@ impl MValue {
             MValue::Address(_) => String::from("address"),
             MValue::Operation(_) => String::from("operation"),
             MValue::Ticket(_) => String::from("ticket"),
+            MValue::Contract(_) => String::from("contract"),
             MValue::Option(_) => String::from("option"),
             MValue::Or(_) => String::from("or"),
             MValue::Pair(_) => String::from("pair"),
@@ -400,6 +424,9 @@ impl MValue {
             MValue::Address(_) => MType::Address,
             MValue::Operation(_) => MType::Operation,
             MValue::Ticket(_) => MType::Ticket,
+            MValue::Contract(val) => {
+                MType::Contract(Box::new((MType::Address, val.parameter.clone())))
+            }
             MValue::Option(val) => MType::Option(Box::new(val.m_type.clone())),
             MValue::Or(val) => MType::Or(Box::new(val.m_type.clone())),
             MValue::Pair(val) => MType::Pair(Box::new(val.m_type.clone())),
