@@ -5,6 +5,7 @@ use regex::Regex;
 use serde_json::Value;
 mod ABS;
 mod ADD;
+mod ADDRESS;
 mod AMOUNT;
 mod AND;
 mod BALANCE;
@@ -57,6 +58,7 @@ mod XOR;
 pub enum Instruction {
     ABS,
     ADD,
+    ADDRESS,
     AND,
     BALANCE,
     AMOUNT,
@@ -161,6 +163,7 @@ impl Instruction {
         match formatted_input {
             "ABS" => Ok(Instruction::ABS),
             "ADD" => Ok(Instruction::ADD),
+            "ADDRESS" => Ok(Instruction::ADDRESS),
             "AND" => Ok(Instruction::AND),
             "AMOUNT" => Ok(Instruction::AMOUNT),
             "BALANCE" => Ok(Instruction::BALANCE),
@@ -299,6 +302,7 @@ impl Instruction {
         let result = match self {
             Instruction::ABS => ABS::run(initial_stack, options, stack_snapshots),
             Instruction::ADD => ADD::run(initial_stack, options, stack_snapshots),
+            Instruction::ADDRESS => ADDRESS::run(initial_stack, options, stack_snapshots),
             Instruction::AND => AND::run(initial_stack, options, stack_snapshots),
             Instruction::AMOUNT => AMOUNT::run(initial_stack, options, stack_snapshots),
             Instruction::BALANCE => BALANCE::run(initial_stack, options, stack_snapshots),

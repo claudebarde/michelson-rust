@@ -339,12 +339,12 @@ impl ContractValue {
         ContractValue { address, parameter }
     }
 
-    pub fn get_address(&self) -> &address {
-        &self.address
+    pub fn get_address(&self) -> address {
+        self.address.clone()
     }
 
-    pub fn get_param(&self) -> &MType {
-        &self.parameter
+    pub fn get_param(&self) -> MType {
+        self.parameter.clone()
     }
 }
 
@@ -365,7 +365,7 @@ pub enum MValue {
     Timestamp(timestamp),
     Address(address),
     Operation(operation),
-    Contract(Box<ContractValue>),
+    Contract(ContractValue),
     Ticket(Box<Ticket>),
     Option(OptionValue),
     Or(OrValue),
