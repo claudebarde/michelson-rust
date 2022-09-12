@@ -9,6 +9,7 @@ Available instructions (implemented and tested):
 
 - [x] ABS
 - [x] ADD
+- [x] ADDRESS
 - [x] AND
 - [x] AMOUNT
 - [x] BALANCE
@@ -61,7 +62,6 @@ Available instructions (implemented and tested):
 - [x] UNPAIR
 - [x] XOR
 
-- [ ] ADDRESS
 - [ ] APPLY
 - [ ] BLAKE2B
 - [ ] CAST
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(52 instructions / 94)
+(53 instructions / 94)

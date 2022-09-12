@@ -11,10 +11,7 @@ pub fn run(
     mut stack_snapshots: StackSnapshots,
 ) -> Result<(Stack, StackSnapshots), String> {
     // checks the stack
-    match stack.check_depth(options.pos + 1, Instruction::ABS) {
-        Ok(_) => (),
-        Err(err) => panic!("{}", err),
-    };
+    stack.check_depth(options.pos + 1, Instruction::ABS)?;
     // verifies that the value at options.pos is an int
     let new_val_res: Result<MValue, String> = match stack[options.pos].value {
         MValue::Int(val) => {
@@ -154,9 +151,6 @@ mod tests {
     // FAILING
     // empty stack
     #[test]
-    #[should_panic(
-        expected = "Unexpected stack length, expected a length of 1 for instruction ABS, got 0"
-    )]
     fn abs_empty_stack() {
         let initial_stack: Stack = vec![];
         let stack_snapshots = vec![];
@@ -176,7 +170,10 @@ mod tests {
         assert!(initial_stack.len() == 0);
 
         match run(initial_stack, &options, stack_snapshots) {
-            Err(err) => panic!("{}", err),
+            Err(err) => assert_eq!(
+                err,
+                "Unexpected stack length, expected a length of 1 for instruction ABS, got 0"
+            ),
             Ok(_) => assert!(false),
         }
     }
