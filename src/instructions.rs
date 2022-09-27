@@ -26,6 +26,7 @@ mod IF;
 mod IF_LEFT;
 mod INT;
 mod ISNAT;
+mod KECCAK;
 mod LE;
 mod LEFT_RIGHT;
 mod LEVEL;
@@ -82,6 +83,7 @@ pub enum Instruction {
     IF_LEFT,
     INT,
     ISNAT,
+    KECCAK,
     LE,
     LEFT,
     LEVEL,
@@ -183,6 +185,7 @@ impl Instruction {
             "IF_LEFT" => Ok(Instruction::IF_LEFT),
             "INT" => Ok(Instruction::INT),
             "ISNAT" => Ok(Instruction::ISNAT),
+            "KECCAK" => Ok(Instruction::KECCAK),
             "GE" => Ok(Instruction::GE),
             "GET" => Ok(Instruction::GET),
             "GT" => Ok(Instruction::GT),
@@ -355,6 +358,7 @@ impl Instruction {
             }
             Instruction::INT => INT::run(initial_stack, options, stack_snapshots),
             Instruction::ISNAT => ISNAT::run(initial_stack, options, stack_snapshots),
+            Instruction::KECCAK => KECCAK::run(initial_stack, options, stack_snapshots),
             Instruction::LE => LE::run(initial_stack, options, stack_snapshots),
             Instruction::LEFT => LEFT_RIGHT::run(
                 initial_stack,

@@ -33,6 +33,7 @@ Available instructions (implemented and tested):
 - [x] IF_LEFT
 - [x] INT
 - [x] ISNAT
+- [x] KECCAK
 - [x] LE
 - [x] LEFT
 - [x] LEVEL
@@ -78,7 +79,6 @@ Available instructions (implemented and tested):
 - [ ] IMPLICIT_ACCOUNT
 - [ ] ITER
 - [ ] JOIN_TICKETS
-- [ ] KECCAK
 - [ ] LAMBDA
 - [ ] LOOP
 - [ ] LSL
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(53 instructions / 94)
+(54 instructions / 94)
