@@ -56,7 +56,7 @@ mod UNIT;
 mod UNPAIR;
 mod XOR;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum Instruction {
     ABS,
     ADD,

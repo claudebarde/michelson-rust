@@ -10,8 +10,10 @@ pub fn run(
     options: &RunOptions,
     mut stack_snapshots: StackSnapshots,
 ) -> Result<(Stack, StackSnapshots), String> {
+    let this_instruction = Instruction::ADD;
+
     // checks the stack
-    match stack.check_depth(options.pos + 2, Instruction::ADD) {
+    match stack.check_depth(options.pos + 2, this_instruction) {
         Ok(_) => (),
         Err(err) => panic!("{}", err),
     };
@@ -65,11 +67,11 @@ pub fn run(
             m_val_right.to_string()
         ),
     };
-    // removes the 2 elements being added from the stack
+    // removes the first element of the addition
     let (_, new_stack) = stack.remove_at(options.pos);
-    // pushes the new element to the stack
+    // replaces the second element of the addition with the new value
     let new_stack = new_stack.replace(
-        vec![StackElement::new(new_val, Instruction::AND)],
+        vec![StackElement::new(new_val, this_instruction)],
         options.pos,
     );
     // updates the stack snapshots

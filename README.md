@@ -21,6 +21,7 @@ Available instructions (implemented and tested):
 - [x] DROP
 - [x] DUG
 - [x] DUP
+- [ ] EDIV
 - [x] EMPTY_BIG_MAP
 - [x] EMPTY_MAP
 - [x] EMPTY_SET
@@ -70,7 +71,6 @@ Available instructions (implemented and tested):
 - [ ] CONTRACT
 - [ ] CREATE_CONTRACT
 - [ ] DIP
-- [ ] EDIV
 - [ ] EXEC
 - [ ] HASH_KEY
 - [ ] IF_CONS
@@ -104,4 +104,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(54 instructions / 94)
+(55 instructions / 93)
