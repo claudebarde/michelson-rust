@@ -17,6 +17,7 @@ mod DIG;
 mod DROP;
 mod DUG;
 mod DUP;
+mod EDIV;
 mod EMPTY_COLLECTION;
 mod EQ;
 mod GE;
@@ -71,6 +72,7 @@ pub enum Instruction {
     DROP,
     DUG,
     DUP,
+    EDIV,
     EMPTY_BIG_MAP,
     EMPTY_MAP,
     EMPTY_SET,
@@ -177,6 +179,7 @@ impl Instruction {
             "DROP" => Ok(Instruction::DROP),
             "DUG" => Ok(Instruction::DUG),
             "DUP" => Ok(Instruction::DUP),
+            "EDIV" => Ok(Instruction::EDIV),
             "EMPTY_BIG_MAP" => Ok(Instruction::EMPTY_BIG_MAP),
             "EMPTY_MAP" => Ok(Instruction::EMPTY_MAP),
             "EMPTY_SET" => Ok(Instruction::EMPTY_SET),
@@ -317,6 +320,7 @@ impl Instruction {
             Instruction::DROP => DROP::run(initial_stack, args, options, stack_snapshots),
             Instruction::DUG => DUG::run(initial_stack, args, options, stack_snapshots),
             Instruction::DUP => DUP::run(initial_stack, args, options, stack_snapshots),
+            Instruction::EDIV => EDIV::run(initial_stack, options, stack_snapshots),
             Instruction::EMPTY_BIG_MAP => EMPTY_COLLECTION::run(
                 initial_stack,
                 args,
