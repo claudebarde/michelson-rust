@@ -32,6 +32,7 @@ mod LE;
 mod LEFT_RIGHT;
 mod LEVEL;
 mod LT;
+mod MAP;
 mod MEM;
 mod MUL;
 mod NEG;
@@ -90,6 +91,7 @@ pub enum Instruction {
     LEFT,
     LEVEL,
     LT,
+    MAP,
     MEM,
     MUL,
     NEG,
@@ -196,6 +198,7 @@ impl Instruction {
             "LEFT" => Ok(Instruction::LEFT),
             "LEVEL" => Ok(Instruction::LEVEL),
             "LT" => Ok(Instruction::LT),
+            "MAP" => Ok(Instruction::MAP),
             "MEM" => Ok(Instruction::MEM),
             "MUL" => Ok(Instruction::MUL),
             "NEG" => Ok(Instruction::NEG),
@@ -373,6 +376,7 @@ impl Instruction {
             ),
             Instruction::LEVEL => LEVEL::run(initial_stack, options, stack_snapshots),
             Instruction::LT => LT::run(initial_stack, options, stack_snapshots),
+            Instruction::MAP => MAP::run(initial_stack, options, stack_snapshots),
             Instruction::MEM => MEM::run(initial_stack, options, stack_snapshots),
             Instruction::MUL => MUL::run(initial_stack, options, stack_snapshots),
             Instruction::NEG => NEG::run(initial_stack, options, stack_snapshots),
