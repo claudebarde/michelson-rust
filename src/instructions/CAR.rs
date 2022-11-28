@@ -33,3 +33,86 @@ pub fn run(
 
     Ok((new_stack, stack_snapshots))
 }
+
+/*
+    TESTS
+*/
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::{instructions::RunOptionsContext, m_types::PairValue};
+
+    // PASSING TESTS
+    #[test]
+    fn car_success() {
+        let initial_stack: Stack = vec![
+            StackElement::new(
+                MValue::Pair(PairValue::new(MValue::Nat(7), MValue::Mutez(5_000_000))),
+                Instruction::INIT,
+            ),
+            StackElement::new(MValue::Int(4), Instruction::INIT),
+            StackElement::new(MValue::String(String::from("taquito")), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        let initial_stack_len = initial_stack.len();
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == initial_stack_len); // initial stack and new stack must have the same lengths
+                assert_eq!(stack[0].value, MValue::Nat(7));
+                assert_eq!(stack[0].instruction, Instruction::CAR);
+                assert_eq!(stack[1].value, MValue::Int(4));
+                assert_eq!(stack[2].value, MValue::String(String::from("taquito")));
+            }
+        }
+    }
+
+    // FAILING TESTS
+    #[test]
+    fn car_empty_stack() {
+        let initial_stack: Stack = vec![];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => assert_eq!(
+                err,
+                String::from(
+                    "Unexpected stack length, expected a length of 1 for instruction CAR, got 0"
+                )
+            ),
+            Ok(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn car_wrong_type() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(4), Instruction::INIT),
+            StackElement::new(MValue::String(String::from("taquito")), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Err(err) => assert_eq!(
+                err,
+                String::from("Wrong type, expected `pair` for instruction CAR, got `int`")
+            ),
+            Ok(_) => assert!(false),
+        }
+    }
+}
