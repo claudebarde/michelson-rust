@@ -212,6 +212,16 @@ impl PairValue {
         *self.value.clone()
     }
 
+    /// extracts left field of the pair
+    pub fn car(&self) -> MValue {
+        self.value.clone().0
+    }
+
+    /// extracts right field of the pair
+    pub fn cdr(&self) -> MValue {
+        self.value.clone().1
+    }
+
     /// checks if a pair is right-combed
     /// if it is, returns Some(pair depth), if it isn't, returns None
     pub fn check_right_comb_depth(&self) -> Option<usize> {

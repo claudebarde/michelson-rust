@@ -66,7 +66,9 @@ Available instructions (implemented and tested):
 
 - [ ] APPLY
 - [ ] BLAKE2B
+- [ ] CAR
 - [ ] CAST
+- [ ] CDR
 - [ ] CHECK_SIGNATURE
 - [ ] CONTRACT
 - [ ] CREATE_CONTRACT

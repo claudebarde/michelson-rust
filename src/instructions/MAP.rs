@@ -5,6 +5,22 @@ use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 
 // https://tezos.gitlab.io/michelson-reference/#instr-MAP
 
+/*
+TEST CONTRACT
+
+parameter (list nat) ;
+storage (list nat) ;
+code {
+    CAR ;
+    MAP {
+        PUSH nat 2 ;
+        MUL ;
+    } ;
+    NIL operation ;
+    PAIR ;
+} ;
+*/
+
 pub fn run(
     stack: Stack,
     options: &RunOptions,
@@ -15,7 +31,11 @@ pub fn run(
     stack.check_depth(options.pos + 1, this_instruction)?;
     // checks that the value on the stack is correct
     let new_val: MValue = match stack[options.pos].get_val() {
-        MValue::List(list) => Ok(MValue::Int(69)),
+        MValue::List(list) => {
+            // checks that all the elements of the list are of the same type
+            // loops through the list and applies instructions
+            Ok(MValue::Int(69))
+        },
         MValue::Map(map) => Ok(MValue::Int(69)),
         _ => Err(format!(
             "Invalid type on the stack at position {} for instruction `{:?}`, expected list or map, but got {:?}",
