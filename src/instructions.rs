@@ -10,6 +10,7 @@ mod AMOUNT;
 mod AND;
 mod BALANCE;
 mod CAR;
+mod CDR;
 mod CHAIN_ID;
 mod COMPARE;
 mod CONCAT;
@@ -67,6 +68,7 @@ pub enum Instruction {
     BALANCE,
     AMOUNT,
     CAR,
+    CDR,
     CHAIN_ID,
     COMPARE,
     CONCAT,
@@ -176,6 +178,7 @@ impl Instruction {
             "AMOUNT" => Ok(Instruction::AMOUNT),
             "BALANCE" => Ok(Instruction::BALANCE),
             "CAR" => Ok(Instruction::CAR),
+            "CDR" => Ok(Instruction::CDR),
             "CHAIN_ID" => Ok(Instruction::CHAIN_ID),
             "COMPARE" => Ok(Instruction::COMPARE),
             "CONCAT" => Ok(Instruction::CONCAT),
@@ -319,6 +322,7 @@ impl Instruction {
             Instruction::AMOUNT => AMOUNT::run(initial_stack, options, stack_snapshots),
             Instruction::BALANCE => BALANCE::run(initial_stack, options, stack_snapshots),
             Instruction::CAR => CAR::run(initial_stack, options, stack_snapshots),
+            Instruction::CDR => CDR::run(initial_stack, options, stack_snapshots),
             Instruction::CHAIN_ID => CHAIN_ID::run(initial_stack, options, stack_snapshots),
             Instruction::COMPARE => COMPARE::run(initial_stack, options, stack_snapshots),
             Instruction::CONCAT => CONCAT::run(initial_stack, options, stack_snapshots),

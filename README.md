@@ -13,6 +13,8 @@ Available instructions (implemented and tested):
 - [x] AND
 - [x] AMOUNT
 - [x] BALANCE
+- [ ] CAR
+- [ ] CDR
 - [x] CHAIN_ID
 - [x] COMPARE
 - [x] CONCAT
@@ -66,9 +68,7 @@ Available instructions (implemented and tested):
 
 - [ ] APPLY
 - [ ] BLAKE2B
-- [ ] CAR
 - [ ] CAST
-- [ ] CDR
 - [ ] CHECK_SIGNATURE
 - [ ] CONTRACT
 - [ ] CREATE_CONTRACT
@@ -106,4 +106,4 @@ Available instructions (implemented and tested):
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(55 instructions / 93)
+(57 instructions / 95)
