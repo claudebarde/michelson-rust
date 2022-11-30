@@ -8,6 +8,7 @@ enum ValType {
     Simple,
     OneParam,
     TwoParam,
+    CodeBlockParam,
     Condition,
     Unknown
 }
@@ -27,13 +28,19 @@ struct ParsedCondition {
 }
 
 #[derive(Debug)]
+struct ParsedInstrWithBlock {
+    code_block: String,
+    new_code: String
+}
+
+#[derive(Debug)]
 pub struct RunResult {
     pub stack: Stack,
     pub stack_snapshots: Vec<Stack>,
     pub has_failed: bool,
 }
 
-fn parse_conditions(code: &str) -> Result<ParsedCondition, String> {
+fn parse_condition(code: &str) -> Result<ParsedCondition, String> {
     // iterates through the string to find curly braces
     let mut opening_curly_braces = 0;
     let mut closing_curly_braces = 0;
@@ -61,7 +68,9 @@ fn parse_conditions(code: &str) -> Result<ParsedCondition, String> {
             condition_second_branch.push(c);
         }
         // switch to the second branch
-        if opening_curly_braces == closing_curly_braces && opening_curly_braces > 0 && in_first_branch == true {
+        if opening_curly_braces == closing_curly_braces && 
+        opening_curly_braces > 0 && 
+        in_first_branch == true {
             in_first_branch = false;
             opening_curly_braces = 0;
             closing_curly_braces = 0;
@@ -91,32 +100,55 @@ fn parse_conditions(code: &str) -> Result<ParsedCondition, String> {
             right_branch_code: second_branch.to_string(),
             new_code: new_code.to_string()
         })
-        /*
+    } else {
+        Err(String::from("An error has occurred while parsing a condition block"))
+    }
+}
+
+fn parse_instr_with_code(code: &str) -> Result<ParsedInstrWithBlock, String> {
+    // iterates through the string to find curly braces
+    let mut opening_curly_braces = 0;
+    let mut closing_curly_braces = 0;
+    let mut instruction_parameter = String::new();
+    let mut char_count = 0;
+    for c in code.chars() {
+        // breaks the loop when the number of curly braces is the same
+        if opening_curly_braces == closing_curly_braces && opening_curly_braces > 0 {
+            break;
+        }
+        // keeps track of opening curly braces
+        if c == '{' {
+            opening_curly_braces += 1;
+        }
+        // keeps track of closing curly braces
+        if c == '}' {
+            closing_curly_braces += 1;
+        }
+        // copies the string into the appropriate condition branch
+        if opening_curly_braces > 0 {
+            instruction_parameter.push(c);
+        }
+
+        char_count += 1;
+    };
+    // println!("`{}` / `{}`", condition_first_branch, condition_second_branch);
+    // TODO: add some safeguards to avoid curly braces that are not closed
+    if instruction_parameter.len() > 0 {
+        // trims and removes leading and trailing curly braces, spaces and semi-colons
+        let front_cleanup_regex = Regex::new(r"^(\s|;|\{|\})+").unwrap();
+        let back_cleanup_regex = Regex::new(r"(\s|;|\{|\})+$").unwrap();
         // first branch
-        let mut first_branch = condition_first_branch.trim();
-        if &first_branch.chars().nth(0).unwrap() == &'{' {
-            first_branch = &first_branch[1..];
-        };
-        if &first_branch.chars().nth(first_branch.len() - 1).unwrap() == &'}' {
-            first_branch = &first_branch[..first_branch.len() - 1];
-        };
-        first_branch = first_branch.trim();
+        let code_block = front_cleanup_regex.replace(instruction_parameter.as_str(), "");
+        let code_block = back_cleanup_regex.replace(&code_block, "");
+        // code left without the condition
+        let new_code = &code[char_count..];
+        let new_code = front_cleanup_regex.replace(&new_code, "");
+        let new_code = back_cleanup_regex.replace(&new_code, "");
 
-        // second branch
-        let mut second_branch = condition_second_branch.trim();
-        if &second_branch.chars().nth(0).unwrap() == &'{' {
-            second_branch = &second_branch[1..];
-        };
-        if &second_branch.chars().nth(second_branch.len() - 1).unwrap() == &'}' {
-            second_branch = &second_branch[..second_branch.len() - 1];
-        };
-        second_branch = second_branch.trim();
-
-        Ok(ParsedCondition {
-            left_branch_code: first_branch.to_string(),
-            right_branch_code: second_branch.to_string(),
-            char_count
-        })*/
+        Ok(ParsedInstrWithBlock {
+            code_block: code_block.to_string(),
+            new_code: new_code.to_string()
+        })
     } else {
         Err(String::from("An error has occurred while parsing a condition block"))
     }
@@ -134,6 +166,7 @@ pub fn parse(code: String) -> Result<Vec<ParsedCode>, (String, Vec<ParsedCode>)>
     let simple_instr_regex = Regex::new(r"^([A-Z_]+)\s*(;|$)").unwrap();
     let one_param_instr_regex = Regex::new(r"^([A-Z_]+)\s+([^\s]+)\s*(;|$)").unwrap();
     let two_param_instr_regex = Regex::new(r#"^([A-Z_]+)\s+([^\s{};]+)\s+"?([^;\s]+?)"?\s*(;|$)"#).unwrap();
+    let instr_with_code_regex = Regex::new(r#"(MAP|DIP|LOOP|LOOP_LEFT|ITER)\s*\{"#).unwrap();
     // let if_instr_regex = Regex::new(r"^(IF.*?)\s*\{(.*)\}\s*\{(.*)\}\s*(;|$)").unwrap();
     let if_instr_regex = Regex::new(r#"^(IF_LEFT|IF_SOME|IF_NONE|IF_CONS|IF)[\s|\{]"#).unwrap();
 
@@ -218,6 +251,38 @@ pub fn parse(code: String) -> Result<Vec<ParsedCode>, (String, Vec<ParsedCode>)>
                 }
             }
         }
+        // checks for instructions with code block as parameter
+        else if instr_with_code_regex.is_match(&code_loop) {
+            // gets the current instruction
+            let instruction = match instr_with_code_regex.captures(&code_loop) {
+                None => panic!("An error has occured while parsing the Michelson code (instruction with code block regex capture)"),
+                Some (m) => m.get(1).unwrap().as_str()
+            };
+            // parses the code in the instruction block
+            // println!("\ninstruction: {}, code loop: {}", instruction, code_loop);
+            match parse_instr_with_code(&code) {
+                Err(err) => panic!("{}", err),
+                Ok(res) => {
+                    let code_block = parse(res.code_block);
+                    let instrs: Vec<ParsedCode> = 
+                        match code_block {
+                            Ok(set) => set,
+                            Err(err) => panic!("{}", err.0)
+                        };
+
+                    instructions.push(ParsedCode {
+                        value: String::from(instruction),
+                        val_type: ValType::CodeBlockParam,
+                        args: Some(vec!(
+                            instrs
+                        ))
+                    });
+                    // cleans up the string
+                    println!("\n parsed code: `{}` \n new code: `{}`", code_loop, res.new_code);
+                    code_loop = String::from(res.new_code.trim());
+                }
+            }
+        }
         // checks for condition instructions
         else if if_instr_regex.is_match(&code_loop) {
             // gets the current instruction
@@ -227,7 +292,7 @@ pub fn parse(code: String) -> Result<Vec<ParsedCode>, (String, Vec<ParsedCode>)>
             };
             // parses the code in the condition block
             println!("\ncode loop: {}", code_loop);
-            match parse_conditions(&code_loop) {
+            match parse_condition(&code_loop) {
                 Err(err) => panic!("{}", err),
                 Ok(res) => {
                     let sub_instr1 = parse(res.left_branch_code);
@@ -363,6 +428,30 @@ pub fn to_json(ast: &Vec<ParsedCode>) -> Result<String, String> {
                         args.0.value,
                         val_type,
                         args.1.value
+                    ).as_str());
+                    // adds a comma separator
+                    if index != ast.len() - 1 {
+                        json.push_str(", ")
+                    }
+                },
+                ValType::CodeBlockParam => {
+                    let args: String = 
+                        match &instruction.args {
+                            None => panic!("Unexpected None value for args"),
+                            Some (args_) =>
+                                if args_.len() != 1 {
+                                    panic!("Unexpected length of vector for instruction arguments")
+                                } else {
+                                    match to_json(&args_[0]) {
+                                        Ok(json) => json,
+                                        Err(err) => panic!("{}", err),
+                                    }
+                                }
+                        };
+                    json.push_str(format!(
+                        r#"{{"prim": "{}", "args": [{}]}}"#,
+                        instruction.value,
+                        args
                     ).as_str());
                     // adds a comma separator
                     if index != ast.len() - 1 {

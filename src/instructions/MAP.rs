@@ -1,32 +1,18 @@
-use crate::errors::{display_error, ErrorCode};
+// use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::{MType, MValue};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
+use serde_json::Value;
 
 // https://tezos.gitlab.io/michelson-reference/#instr-MAP
 
-/*
-TEST CONTRACT
-
-parameter (list nat) ;
-storage (list nat) ;
-code {
-    CAR ;
-    MAP {
-        PUSH nat 2 ;
-        MUL ;
-    } ;
-    NIL operation ;
-    PAIR ;
-} ;
-*/
-
 pub fn run(
     stack: Stack,
+    args: Option<&Vec<Value>>,
     options: &RunOptions,
     mut stack_snapshots: StackSnapshots,
 ) -> Result<(Stack, StackSnapshots), String> {
-    let this_instruction = Instruction::EDIV;
+    let this_instruction = Instruction::MAP;
     // checks the stack
     stack.check_depth(options.pos + 1, this_instruction)?;
     // checks that the value on the stack is correct

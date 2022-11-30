@@ -1,4 +1,3 @@
-use crate::errors::{display_error, ErrorCode};
 use crate::instructions::Instruction;
 use crate::instructions::RunOptions;
 use crate::stack::{Stack, StackFuncs, StackSnapshots};

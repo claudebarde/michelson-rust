@@ -384,7 +384,7 @@ impl Instruction {
             ),
             Instruction::LEVEL => LEVEL::run(initial_stack, options, stack_snapshots),
             Instruction::LT => LT::run(initial_stack, options, stack_snapshots),
-            Instruction::MAP => MAP::run(initial_stack, options, stack_snapshots),
+            Instruction::MAP => MAP::run(initial_stack, args, options, stack_snapshots),
             Instruction::MEM => MEM::run(initial_stack, options, stack_snapshots),
             Instruction::MUL => MUL::run(initial_stack, options, stack_snapshots),
             Instruction::NEG => NEG::run(initial_stack, options, stack_snapshots),
@@ -413,7 +413,7 @@ impl Instruction {
             Instruction::SUB => SUB::run(initial_stack, options, stack_snapshots),
             Instruction::SWAP => SWAP::run(initial_stack, options, stack_snapshots),
             Instruction::UNIT => UNIT::run(initial_stack, options, stack_snapshots),
-            Instruction::UNPAIR => UNPAIR::run(initial_stack, args, options, stack_snapshots),
+            Instruction::UNPAIR => UNPAIR::run(initial_stack, options, stack_snapshots),
             Instruction::XOR => XOR::run(initial_stack, options, stack_snapshots),
             _ => panic!("Invalid instruction {:?}", self),
         };

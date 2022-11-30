@@ -6,39 +6,14 @@ use serde_json::Value;
 
 // https://tezos.gitlab.io/michelson-reference/#instr-UNPAIR
 
-/// checks if the stack has the correct properties
-fn check_stack(stack: &Stack, pos: usize) -> Result<(), String> {
-    // stack must have at least one element
-    if stack.len() < 1 {
-        return Err(display_error(ErrorCode::StackNotDeepEnough((
-            1,
-            stack.len(),
-            Instruction::UNPAIR,
-        ))));
-    }
-    // the element at pos index must be a pair
-    match stack[pos].value {
-        MValue::Pair(_) => Ok(()),
-        _ => Err(display_error(ErrorCode::WrongType((
-            String::from("pair"),
-            MValue::to_string(&stack[0].value),
-            Instruction::UNPAIR,
-        )))),
-    }
-}
-
-/// runs the instruction with the provided stack and options
 pub fn run(
     stack: Stack,
-    args: Option<&Vec<Value>>,
     options: &RunOptions,
     mut stack_snapshots: StackSnapshots,
 ) -> Result<(Stack, StackSnapshots), String> {
+    let this_instruction = Instruction::UNPAIR;
     // checks the stack
-    match check_stack(&stack, options.pos) {
-        Ok(_) => (),
-        Err(err) => panic!("{}", err),
-    };
+    stack.check_depth(options.pos + 1, this_instruction)?;
     // unpairs the value
     let unpair_res: Result<(MValue, MValue), String> = match stack[options.pos].value.clone() {
         MValue::Pair(pair) => Ok(pair.unpair()),
@@ -49,8 +24,8 @@ pub fn run(
     };
     let (el1, el2) = unpair_res?;
     // creates the new stack elements
-    let stack_el1 = StackElement::new(el1, Instruction::UNPAIR);
-    let stack_el2 = StackElement::new(el2, Instruction::UNPAIR);
+    let stack_el1 = StackElement::new(el1, this_instruction);
+    let stack_el2 = StackElement::new(el2, this_instruction);
     let els_to_insert = vec![stack_el1, stack_el2];
     let new_stack = stack.clone().replace(els_to_insert, options.pos);
     // updates the stack snapshots
@@ -91,7 +66,7 @@ mod tests {
 
         assert!(initial_stack.len() == 3);
 
-        match run(initial_stack, args, &options, stack_snapshots) {
+        match run(initial_stack, &options, stack_snapshots) {
             Ok((new_stack, _)) => {
                 assert!(new_stack.len() == 4);
                 assert!(new_stack[0].value == MValue::Int(6));
@@ -118,7 +93,7 @@ mod tests {
 
         assert!(initial_stack.len() == 0);
 
-        match run(initial_stack, args, &options, stack_snapshots) {
+        match run(initial_stack, &options, stack_snapshots) {
             Ok(_) => assert!(false),
             Err(err) => panic!("{}", err),
         }

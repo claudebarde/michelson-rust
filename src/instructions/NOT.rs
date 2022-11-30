@@ -15,7 +15,7 @@ pub fn run(
         Err(err) => panic!("{}", err),
     };
     // pattern matches the different numeric types
-    let new_val: MValue = match (stack[options.pos].get_val()) {
+    let new_val: MValue = match stack[options.pos].get_val() {
         // boolean NOT
         MValue::Bool(val) => Ok(MValue::Bool(!val)),
         // bitwise NOT
