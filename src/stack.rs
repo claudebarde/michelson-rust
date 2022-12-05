@@ -38,6 +38,9 @@ pub trait StackFuncs {
     /// Helper function to remove an element from the stack at the provided index
     /// Returns the element and the updated stack
     fn remove_at(&self, pos: usize) -> (StackElement, Stack);
+    /// Helper function to push a new element on top of the stack
+    /// Returns the new stack
+    fn push(&self, el_to_push: MValue, instruction: Instruction) -> Stack;
     /// Helper function to check if the stack has the correct properties
     fn check_depth(&self, expected_size: usize, instruction: Instruction) -> Result<(), String>;
 }
@@ -76,6 +79,20 @@ impl StackFuncs for Stack {
         let mut new_stack = self.clone();
         let stack_el = new_stack.remove(pos);
         (stack_el, new_stack)
+    }
+    /// Helper function to push a new element on top of the stack
+    /// Returns the new stack
+    fn push(&self, val: MValue, instruction: Instruction) -> Stack {
+        let stack_start = self.clone();
+        // creates the new stack element
+        let new_el = StackElement::new(val, instruction);
+        let temp_stack = vec![new_el];
+
+        // returns the new stack
+        stack_start
+            .into_iter()
+            .chain(temp_stack.into_iter())
+            .collect()
     }
     /// Helper function to check if the stack has the correct properties
     fn check_depth(&self, expected_size: usize, instruction: Instruction) -> Result<(), String> {

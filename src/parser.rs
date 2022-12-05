@@ -278,7 +278,6 @@ pub fn parse(code: String) -> Result<Vec<ParsedCode>, (String, Vec<ParsedCode>)>
                         ))
                     });
                     // cleans up the string
-                    println!("\n parsed code: `{}` \n new code: `{}`", code_loop, res.new_code);
                     code_loop = String::from(res.new_code.trim());
                 }
             }

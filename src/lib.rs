@@ -108,10 +108,13 @@ mod test {
         "#;
 
         let parsed_michelson = parser::parse(String::from(michelson_code));
+        assert!(parsed_michelson.is_ok());
+
         let parsed_json = match parsed_michelson {
             Ok(mich) => parser::to_json(&mich),
-            Err((err, _)) => panic!("{}", err),
+            Err((err, _)) => Err(err),
         };
+        assert!(parsed_json.is_ok());
 
         let run_result: Result<RunResult, String> = match parsed_json {
             Ok(json) => {
@@ -145,6 +148,19 @@ mod test {
             Ok(result) => {
                 assert_eq!(result.stack.len(), 1);
                 assert_eq!(result.has_failed, false);
+                assert_eq!(
+                    result.stack[0].get_val(),
+                    MValue::Pair(PairValue::new(
+                        MValue::List(CollectionValue {
+                            m_type: MType::Operation,
+                            value: Box::new(vec![])
+                        }),
+                        MValue::List(CollectionValue {
+                            m_type: MType::Int,
+                            value: Box::new(vec![MValue::Int(6), MValue::Int(12), MValue::Int(22)])
+                        })
+                    ))
+                );
                 assert_eq!(
                     result.stack[0].get_val().get_type(),
                     MType::Pair(Box::new((
