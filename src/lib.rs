@@ -7,6 +7,7 @@ mod instructions;
 mod m_types;
 mod parser;
 mod stack;
+mod utils;
 
 #[cfg(test)]
 mod test {
@@ -100,7 +101,7 @@ mod test {
         let michelson_code = r#"
             CAR ;
             MAP {
-                PUSH nat 2 ;
+                PUSH nat 3 ;
                 MUL ;
             } ;
             NIL operation ;

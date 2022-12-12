@@ -1,5 +1,5 @@
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{int, nat, MValue};
+use crate::m_types::MValue;
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 
 // https://tezos.gitlab.io/michelson-reference/#instr-XOR

@@ -1,8 +1,6 @@
-use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
 use crate::m_types::MValue;
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
-use serde_json::Value;
 
 // https://tezos.gitlab.io/michelson-reference/#instr-UNPAIR
 
@@ -42,6 +40,7 @@ mod tests {
     use super::*;
     use crate::instructions::RunOptionsContext;
     use crate::m_types::{MType, PairValue};
+    use serde_json::Value;
 
     // PASSING
     #[test]

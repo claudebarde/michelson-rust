@@ -23,15 +23,16 @@ pub fn run(
             list.check_elements_type(this_instruction)?;
             // loops through the list and applies instructions
             match args {
-                None => Ok((stack, stack_snapshots)), // an empty instruction block is possible, just returning the list
+                None => Ok((stack, stack_snapshots)), // an empty instruction block is possible, just returning the current stack
                 Some (args_) => {
                     // converts serde_json Value to string to run the code
                     let code_block_json = 
                         args_
                         .into_iter()
-                        .map(|el| el.as_str().unwrap())
-                        .collect::<Vec<&str>>()
+                        .map(|el| serde_json::to_string(el).unwrap())
+                        .collect::<Vec<String>>()
                         .join(",");
+                    println!("..{}..", code_block_json);
                     // iterates through the list, pushes the current element to the stack and applies instructions
                     let mut new_list_els: Vec<MValue> = vec![];
                     let (new_stack, stack_snapshots) = 
