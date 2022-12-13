@@ -61,7 +61,15 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
     // formats parameter by removing trailing spaces
     let micheline = micheline.trim();
     // formats parameter by removing start and end parens if any
-    let micheline = micheline.trim_matches(|ch| ch == '(' || ch == ')');
+    let micheline = {
+        if micheline.chars().nth(0).unwrap() == '('
+            && micheline.chars().nth(micheline.len() - 1).unwrap() == ')'
+        {
+            micheline.trim_matches(|ch| ch == '(' || ch == ')')
+        } else {
+            micheline
+        }
+    };
     // figures out if the passed string is a type or a value
     let all_types: Vec<&&str> = TYPES_0_PARAM
         .iter()
@@ -95,9 +103,9 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
         // gets the occurrences of types in the string
         let types_count = valid_types_regex.find_iter(micheline).count();
         // calculates percentage of types in the string
-        let percentage = (types_count / words_count) * 100;
+        let percentage = (types_count as f64 / words_count as f64) * 100.0;
         // estimates if the string includes enough types
-        let threshold = 75;
+        let threshold = 75.0;
         if percentage >= threshold {
             true
         } else {
@@ -179,8 +187,9 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
 
             Ok(String::from("true"))
         } else {
-            Err(String::from(
-                "The provided string doesn't seem to be a valid Michelson type or value",
+            Err(format!(
+                "The provided string doesn't seem to be a valid Michelson type or value: {}",
+                micheline
             ))
         }
     }
@@ -217,6 +226,14 @@ mod test {
         assert!(
             res == Ok(String::from(
                 "{\"prim\":\"option\",\"args\":[{\"prim\":\"list\",\"args\":[{\"prim\":\"nat\"}]}]}"
+            ))
+        );
+
+        let complex_option_with_annot = String::from("option %test (list nat)");
+        let res = micheline_to_json(complex_option_with_annot);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"option\",\"args\":[{\"prim\":\"list\",\"args\":[{\"prim\":\"nat\"}]}],\"annots\":[\"%test\"]}"
             ))
         );
 
