@@ -1,5 +1,4 @@
 use regex::Regex;
-use serde_json::Value as Serde_Value;
 
 const TYPES_0_PARAM: [&str; 21] = [
     "unit",
@@ -36,6 +35,22 @@ const TYPES_1_PARAM: [&str; 7] = [
 ];
 
 const TYPES_2_PARAMS: [&str; 5] = ["pair", "or", "map", "big_map", "lambda"];
+
+/// Checks if the string includes an annotation
+/// Extracts the annotation and returns it along with the parameter type
+fn as_annot(str: &str) -> (String, String) {
+    let annot_regex = Regex::new(r"^(%|:)([a-z0-9_]+)\s+(.+)").unwrap();
+    match annot_regex.captures(str) {
+        None => (String::from(""), str.to_string()),
+        Some(caps) => {
+            let annot_symbol = caps.get(1).unwrap().as_str();
+            let annot_name = caps.get(2).unwrap().as_str();
+            let param = caps.get(3).unwrap().as_str();
+
+            (format!("{}{}", annot_symbol, annot_name), param.to_string())
+        }
+    }
+}
 
 /// Returns a JSON string from Michelsine input
 ///
@@ -109,11 +124,28 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
                     let main_type = caps.get(1).unwrap().as_str();
                     let param_type = caps.get(2).unwrap().as_str();
 
+                    // checks if annotation is present
+                    let (annot, param_type) = as_annot(param_type);
+
                     match micheline_to_json(param_type.to_string()) {
-                        Ok(arg) => (
-                            true,
-                            format!(r#"{{"prim":"{}","args":[{}]}}"#, main_type, arg),
-                        ),
+                        Ok(arg) => {
+                            if annot.len() == 0 {
+                                // no annotation
+                                (
+                                    true,
+                                    format!(r#"{{"prim":"{}","args":[{}]}}"#, main_type, arg),
+                                )
+                            } else {
+                                // annotation
+                                (
+                                    true,
+                                    format!(
+                                        r#"{{"prim":"{}","args":[{}],"annots":["{}"]}}"#,
+                                        main_type, arg, annot
+                                    ),
+                                )
+                            }
+                        }
                         Err(_) => (false, String::from("")),
                     }
                 }
@@ -172,6 +204,14 @@ mod test {
             ))
         );
 
+        let simple_option_with_annot = String::from("option %my_option nat");
+        let res = micheline_to_json(simple_option_with_annot);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"option\",\"args\":[{\"prim\":\"nat\"}],\"annots\":[\"%my_option\"]}"
+            ))
+        );
+
         let complex_option = String::from("option (list nat)");
         let res = micheline_to_json(complex_option);
         assert!(
@@ -182,6 +222,10 @@ mod test {
 
         let simple_pair = String::from("pair int nat");
         let res = micheline_to_json(simple_pair);
+        assert!(res == Ok(String::from("true")));
+
+        let complex_pair = String::from("pair (pair int (option string)) (or nat (option int))");
+        let res = micheline_to_json(complex_pair);
         assert!(res == Ok(String::from("true")));
 
         let wrong_string = String::from("this is a test with an int");

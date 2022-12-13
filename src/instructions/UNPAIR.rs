@@ -45,7 +45,6 @@ mod tests {
     // PASSING
     #[test]
     fn unpair_success() {
-        let args: Option<&Vec<Value>> = None;
         let initial_stack: Stack = vec![
             StackElement::new(
                 MValue::Pair(PairValue {
@@ -82,7 +81,6 @@ mod tests {
         expected = "Unexpected stack length, expected a length of 1 for instruction UNPAIR, got 0"
     )]
     fn unpair_wrong_stack() {
-        let args: Option<&Vec<Value>> = None;
         let initial_stack: Stack = vec![];
         let stack_snapshots = vec![];
         let options = RunOptions {
