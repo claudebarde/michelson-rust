@@ -107,3 +107,15 @@ Available instructions (implemented and tested):
 - [ ] VOTING_POWER
 
 (57 instructions / 95)
+
+## How to run the tests for `utils`?
+
+```
+cargo test test_micheline_to_json -- --nocapture
+```
+
+## How to run the tests in watch mode for `utils`?
+
+```
+cargo watch -x 'test test_micheline_to_json -- --nocapture'
+```
