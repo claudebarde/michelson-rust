@@ -13,8 +13,8 @@ Available instructions (implemented and tested):
 - [x] AND
 - [x] AMOUNT
 - [x] BALANCE
-- [ ] CAR
-- [ ] CDR
+- [x] CAR
+- [x] CDR
 - [x] CHAIN_ID
 - [x] COMPARE
 - [x] CONCAT
@@ -23,7 +23,7 @@ Available instructions (implemented and tested):
 - [x] DROP
 - [x] DUG
 - [x] DUP
-- [ ] EDIV
+- [x] EDIV
 - [x] EMPTY_BIG_MAP
 - [x] EMPTY_MAP
 - [x] EMPTY_SET
