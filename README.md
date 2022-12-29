@@ -111,11 +111,11 @@ Available instructions (implemented and tested):
 ## How to run the tests for `utils`?
 
 ```
-cargo test test_micheline_to_json -- --nocapture
+cargo test utils_test_micheline_to_json -- --nocapture
 ```
 
 ## How to run the tests in watch mode for `utils`?
 
 ```
-cargo watch -x 'test test_micheline_to_json -- --nocapture'
+cargo watch -x 'test utils_test_micheline_to_json -- --nocapture'
 ```

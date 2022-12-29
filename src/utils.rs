@@ -46,6 +46,8 @@ pub fn split_params(
 ) -> Result<String, String> {
     let split_params: Vec<&str> = params.split_whitespace().collect();
 
+    // println!("split params: {} / {:?}", params, split_params);
+
     if split_params.len() == 2 {
         match (
             micheline_to_json(split_params[0].to_string()),
@@ -68,7 +70,31 @@ pub fn split_params(
     }
 }
 
-/// Returns a JSON string from Michelsine input
+/// Removes surrounding parens if any
+fn remove_outer_parens(str: &str) -> &str {
+    let adjacent_parens = Regex::new(r"\)\s*\(").unwrap();
+
+    if str.len() > 0
+        && str.chars().nth(0).unwrap() == '('
+        && str.chars().nth(str.len() - 1).unwrap() == ')'
+        && adjacent_parens.find(str).is_none()
+    {
+        &str[1..(str.len() - 1)]
+    } else {
+        // checks if 2 param type enclosed in parens
+        let complex_type_parens =
+            Regex::new(format!(r"^\({{1}}({})\s+(.*)\){{1}}$", TYPES_2_PARAMS.join("|")).as_str())
+                .unwrap();
+
+        if complex_type_parens.is_match(str) {
+            &str[1..(str.len() - 1)]
+        } else {
+            str
+        }
+    }
+}
+
+/// Returns a JSON string from Micheline input
 ///
 /// # Argument
 ///
@@ -82,6 +108,10 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
     } else {
         // formats parameter by removing trailing spaces
         let micheline = micheline.trim();
+        // formats line returns and white spaces
+        let format_regex = Regex::new(r"\s{2,}").unwrap();
+        let micheline_string = format_regex.replace_all(micheline, " ").to_string();
+        let micheline = micheline_string.as_str();
         // figures out if the passed string is a type or a value
         let all_types: Vec<&&str> = TYPES_0_PARAM
             .iter()
@@ -131,7 +161,7 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
             // checks if the string is a simple type
             let type_0_param_regex = Regex::new(
                 format!(
-                    r"^\({{0,1}}({})\s*({})*\){{0,1}}$",
+                    r"^\(*({})\s*({})*\)*$",
                     TYPES_0_PARAM.join("|"),
                     ANNOT_PATTERN
                 )
@@ -152,7 +182,7 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
                     // checks if the string is a complex type with 1 parameter
                     let type_1_param_regex = Regex::new(
                         format!(
-                            r"^\({{0,1}}({})\s+({})*(.*)$",
+                            r"^\(*({})\s+({})*(.*)$",
                             TYPES_1_PARAM.join("|"),
                             ANNOT_PATTERN
                         )
@@ -186,10 +216,13 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
                             ))
                         }
                         None => {
+                            // removes outer parens
+                            let formatted_micheline = remove_outer_parens(micheline);
+                            // println!("\nformatted_micheline: {}", formatted_micheline);
                             // checks if the string is a complex type with 2 parameters
                             let type_2_params_regex = Regex::new(
                                 format!(
-                                    r"^\({{0,1}}({})\s+({})*(.*)$",
+                                    r"^({})\s+({})*(.*)$",
                                     TYPES_2_PARAMS.join("|"),
                                     ANNOT_PATTERN
                                 )
@@ -197,7 +230,7 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
                             )
                             .unwrap();
 
-                            match type_2_params_regex.captures(micheline) {
+                            match type_2_params_regex.captures(formatted_micheline) {
                                 None => Err(String::from(
                                     "The provided string is not a valid Michelson type",
                                 )),
@@ -223,29 +256,51 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
                                         .collect::<Vec<char>>()
                                         .len();
 
+                                    let is_first_char_paren = params.chars().nth(0).unwrap() == '(';
+                                    let is_last_char_paren =
+                                        params.chars().nth(params.len() - 1).unwrap() == ')';
+                                    let nested_parens =
+                                        params.find(") (").is_some() || params.find(")(").is_some();
+
                                     if open_parens == 0 && closed_parens == 0 {
                                         // no parens, 2 simple types
-                                        split_params(params, micheline, main_type, annot)
+                                        split_params(params, formatted_micheline, main_type, annot)
                                     } else if open_parens == 1
                                         && closed_parens == 1
-                                        && params.chars().nth(0).unwrap() == '('
-                                        && params.chars().nth(params.len() - 1).unwrap() == ')'
+                                        && is_first_char_paren
+                                        && is_last_char_paren
+                                        && !nested_parens
                                     {
-                                        // the parens wrap 2 simple types
-                                        // removes outer parens first
                                         split_params(
                                             &params[1..(params.len() - 1)],
-                                            micheline,
+                                            formatted_micheline,
                                             main_type,
                                             annot,
                                         )
                                     } else {
+                                        let params = {
+                                            if is_first_char_paren
+                                                && is_last_char_paren
+                                                && !nested_parens
+                                            {
+                                                // pattern => (... (...)) || ((...) ...)
+                                                &params[1..(params.len() - 1)]
+                                            } else {
+                                                params
+                                            }
+                                        };
                                         let mut open_parens_counter = 0;
                                         let mut closed_parens_counter = 0;
                                         let mut left_param = String::from("");
 
                                         for c in params.chars() {
-                                            if c == '(' {
+                                            if c == '('
+                                                && left_param.len() > 0
+                                                && open_parens_counter == 0
+                                            {
+                                                // this is the second arg starting
+                                                break;
+                                            } else if c == '(' {
                                                 open_parens_counter += 1;
                                             }
 
@@ -255,6 +310,7 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
 
                                             left_param.push(c);
 
+                                            // breaks after the first set of parens is closed
                                             if open_parens_counter > 0
                                                 && open_parens_counter == closed_parens_counter
                                             {
@@ -263,14 +319,36 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
                                         }
 
                                         // splits the left param from the whole param string
-                                        let right_param = params.replace(left_param.as_str(), "");
+                                        let right_param =
+                                            params.replacen(left_param.as_str(), "", 1);
 
-                                        println!(
-                                            "left param: `{}` / right_param: `{}`",
-                                            left_param, right_param
-                                        );
+                                        // println!(
+                                        //     "open_parens_counter: {}\nclosed_parens_counter: {}\nnested_parens: {}\nis_first_char_paren: {}\nis_last_char_paren: {}\nleft param: `{}` \nright param: `{}` \nmicheline: `{}`\n",
+                                        //     open_parens_counter, closed_parens_counter, nested_parens, is_first_char_paren, is_last_char_paren, left_param, right_param, formatted_micheline
+                                        // );
 
-                                        Ok(String::from("true"))
+                                        // checks params with recursive call
+                                        match (
+                                            micheline_to_json(left_param.clone()),
+                                            micheline_to_json(right_param.clone()),
+                                        ) {
+                                            (Ok(res1), Ok(res2)) => Ok(format!(
+                                                r#"{{"prim":"{}","args":[{},{}]{}}}"#,
+                                                main_type, res1, res2, annot
+                                            )),
+                                            (Ok(_), Err(err)) => Err(format!(
+                                                "Couldn't parse this input: `{}`, error: {}",
+                                                right_param, err
+                                            )),
+                                            (Err(err), Ok(_)) => Err(format!(
+                                                "Couldn't parse this input: `{}`, error: {}",
+                                                left_param, err
+                                            )),
+                                            (Err(err1), Err(err2)) => Err(format!(
+                                                "Couldn't parse these inputs: `{} / {}`, errors: {} / {}",
+                                                left_param, right_param, err1, err2
+                                            )),
+                                        }
                                     }
                                 }
                             }
@@ -291,7 +369,7 @@ mod test {
     use super::*;
 
     #[test]
-    pub fn test_micheline_to_json() {
+    pub fn utils_test_micheline_to_json_simple_types() {
         let simple_nat_type = String::from("nat");
         let res = micheline_to_json(simple_nat_type);
         assert!(res == Ok(String::from("{\"prim\":\"nat\"}")));
@@ -311,7 +389,10 @@ mod test {
                 "{\"prim\":\"address\",\"annots\":[\"%owner\"]}"
             ))
         );
+    }
 
+    #[test]
+    pub fn utils_test_micheline_to_json_1_param() {
         let simple_option = String::from("option nat");
         let res = micheline_to_json(simple_option);
         assert!(
@@ -322,6 +403,14 @@ mod test {
 
         let simple_option_with_annot = String::from("option %my_option nat");
         let res = micheline_to_json(simple_option_with_annot);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"option\",\"args\":[{\"prim\":\"nat\"}],\"annots\":[\"%my_option\"]}"
+            ))
+        );
+
+        let simple_option_with_annot_and_parens = String::from("(option %my_option nat)");
+        let res = micheline_to_json(simple_option_with_annot_and_parens);
         assert!(
             res == Ok(String::from(
                 "{\"prim\":\"option\",\"args\":[{\"prim\":\"nat\"}],\"annots\":[\"%my_option\"]}"
@@ -359,13 +448,26 @@ mod test {
                 "{\"prim\":\"option\",\"args\":[{\"prim\":\"list\",\"args\":[{\"prim\":\"nat\"}],\"annots\":[\"%my_list\"]}],\"annots\":[\"%my_option\"]}"
             ))
         );
+    }
 
+    #[test]
+    pub fn utils_test_micheline_to_json_2_params() {
         let simple_pair = String::from("pair int nat");
         let res = micheline_to_json(simple_pair);
         assert!(
             res == Ok(String::from(
                 "{\"prim\":\"pair\",\"args\":[{\"prim\":\"int\"},{\"prim\":\"nat\"}]}"
-            ))
+            )),
+            "pair int nat failing"
+        );
+
+        let simple_pair_with_parens = String::from("(pair int nat)");
+        let res = micheline_to_json(simple_pair_with_parens);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"pair\",\"args\":[{\"prim\":\"int\"},{\"prim\":\"nat\"}]}"
+            )),
+            "(pair int nat) failing"
         );
 
         let simple_pair_with_annot = String::from("pair %simple_pair (int nat)");
@@ -374,7 +476,17 @@ mod test {
             String::from(
                 "{\"prim\":\"pair\",\"args\":[{\"prim\":\"int\"},{\"prim\":\"nat\"}],\"annots\":[\"%simple_pair\"]}"
             )
-        ));
+        ),
+        "`pair %simple_pair (int nat)` failed");
+
+        let simple_pair_with_annot = String::from("pair %simple_pair int nat");
+        let res = micheline_to_json(simple_pair_with_annot);
+        assert!(res == Ok(
+            String::from(
+                "{\"prim\":\"pair\",\"args\":[{\"prim\":\"int\"},{\"prim\":\"nat\"}],\"annots\":[\"%simple_pair\"]}"
+            )
+        ),
+        "`pair %simple_pair int nat` failed");
 
         let simple_pair = String::from("pair (option mutez) string");
         let res = micheline_to_json(simple_pair);
@@ -389,6 +501,84 @@ mod test {
         assert!(
             res == Ok(String::from(
                 "{\"prim\":\"pair\",\"args\":[{\"prim\":\"int\"},{\"prim\":\"option\",\"args\":[{\"prim\":\"string\"}]}]}"
+            )),
+            "`pair int (option string)`failed"
+        );
+
+        let simple_pair_with_parens = String::from("(pair int (option string))");
+        let res = micheline_to_json(simple_pair_with_parens);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"pair\",\"args\":[{\"prim\":\"int\"},{\"prim\":\"option\",\"args\":[{\"prim\":\"string\"}]}]}"
+            )),
+            "`pair int (option string)`failed"
+        );
+
+        let simple_pair_with_annot = String::from("pair %my_pair (int (option string))");
+        let res = micheline_to_json(simple_pair_with_annot);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"pair\",\"args\":[{\"prim\":\"int\"},{\"prim\":\"option\",\"args\":[{\"prim\":\"string\"}]}],\"annots\":[\"%my_pair\"]}"
+            )),
+            "`pair %my_pair (int (option string))` failed"
+        );
+
+        let simple_pair_with_field_annots = String::from("pair (int %owner) (nat %amount)");
+        let res = micheline_to_json(simple_pair_with_field_annots);
+        // println!("{:?}", res);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"pair\",\"args\":[{\"prim\":\"int\",\"annots\":[\"%owner\"]},{\"prim\":\"nat\",\"annots\":[\"%amount\"]}]}"
+            ))
+        );
+
+        let nested_pairs = String::from("pair (pair string int) (pair nat mutez)");
+        let res = micheline_to_json(nested_pairs);
+        assert!(res == Ok(String::from(
+            "{\"prim\":\"pair\",\"args\":[{\"prim\":\"pair\",\"args\":[{\"prim\":\"string\"},{\"prim\":\"int\"}]},{\"prim\":\"pair\",\"args\":[{\"prim\":\"nat\"},{\"prim\":\"mutez\"}]}]}"
+        )));
+
+        let complex_pair = String::from("pair (pair int (option string)) (or nat (option int))");
+        let res = micheline_to_json(complex_pair);
+        assert!(res == Ok(String::from(
+            "{\"prim\":\"pair\",\"args\":[{\"prim\":\"pair\",\"args\":[{\"prim\":\"int\"},{\"prim\":\"option\",\"args\":[{\"prim\":\"string\"}]}]},{\"prim\":\"or\",\"args\":[{\"prim\":\"nat\"},{\"prim\":\"option\",\"args\":[{\"prim\":\"int\"}]}]}]}"
+            )),
+            "`pair (pair int (option string)) (or nat (option int))`failed with error: {:?}",
+            res
+        );
+
+        let wrong_string = String::from("this is a test with an int");
+        let res = micheline_to_json(wrong_string);
+        assert!(res.is_err());
+
+        let complex_big_map = String::from(
+            "(big_map %balances address (pair (map %approvals address nat) (nat %balance)))",
+        );
+        let res = micheline_to_json(complex_big_map);
+        assert!(res == Ok(String::from(
+            "{\"prim\":\"big_map\",\"args\":[{\"prim\":\"address\"},{\"prim\":\"pair\",\"args\":[{\"prim\":\"map\",\"args\":[{\"prim\":\"address\"},{\"prim\":\"nat\"}],\"annots\":[\"%approvals\"]},{\"prim\":\"nat\",\"annots\":[\"%balance\"]}]}],\"annots\":[\"%balances\"]}"
+            )),
+            "`(big_map %balances address (pair (map %approvals address nat) (nat %balance)))`failed with error: {:?}",
+            res
+        );
+
+        let kusd_storage_type = String::from(
+            "pair
+            (pair
+            (pair (address %administrator)
+                    (big_map %balances address
+                                    (pair (map %approvals address nat) (nat %balance))))
+            (pair (nat %debtCeiling) (address %governorContractAddress)))
+            (pair (pair (big_map %metadata string bytes) (bool %paused))
+                (pair (big_map %token_metadata nat (pair nat (map string bytes)))
+                        (nat %totalSupply)))",
+        );
+        let res = micheline_to_json(kusd_storage_type);
+        // println!("\n{:?}\n", res);
+        assert!(res.is_ok());
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"pair\",\"args\":[{\"prim\":\"pair\",\"args\":[{\"prim\":\"pair\",\"args\":[{\"prim\":\"address\",\"annots\":[\"%administrator\"]},{\"prim\":\"big_map\",\"args\":[{\"prim\":\"address\"},{\"prim\":\"pair\",\"args\":[{\"prim\":\"map\",\"args\":[{\"prim\":\"address\"},{\"prim\":\"nat\"}],\"annots\":[\"%approvals\"]},{\"prim\":\"nat\",\"annots\":[\"%balance\"]}]}],\"annots\":[\"%balances\"]}]},{\"prim\":\"pair\",\"args\":[{\"prim\":\"nat\",\"annots\":[\"%debtCeiling\"]},{\"prim\":\"address\",\"annots\":[\"%governorContractAddress\"]}]}]},{\"prim\":\"pair\",\"args\":[{\"prim\":\"pair\",\"args\":[{\"prim\":\"big_map\",\"args\":[{\"prim\":\"string\"},{\"prim\":\"bytes\"}],\"annots\":[\"%metadata\"]},{\"prim\":\"bool\",\"annots\":[\"%paused\"]}]},{\"prim\":\"pair\",\"args\":[{\"prim\":\"big_map\",\"args\":[{\"prim\":\"nat\"},{\"prim\":\"pair\",\"args\":[{\"prim\":\"nat\"},{\"prim\":\"map\",\"args\":[{\"prim\":\"string\"},{\"prim\":\"bytes\"}]}]}],\"annots\":[\"%token_metadata\"]},{\"prim\":\"nat\",\"annots\":[\"%totalSupply\"]}]}]}]}"
             ))
         );
     }
