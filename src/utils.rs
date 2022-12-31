@@ -100,235 +100,228 @@ fn remove_outer_parens(str: &str) -> &str {
 ///
 /// * `micheline` - The Micheline string to turn into JSON, can be a type or a value
 pub fn micheline_to_json(micheline: String) -> Result<String, String> {
-    if micheline.len() < 3 {
-        Err(format!(
-            "Expected Micheline string must be at least 3 character long, got `{}`",
-            micheline
-        ))
-    } else {
-        // formats parameter by removing trailing spaces
-        let micheline = micheline.trim();
-        // formats line returns and white spaces
-        let format_regex = Regex::new(r"\s{2,}").unwrap();
-        let micheline_string = format_regex.replace_all(micheline, " ").to_string();
-        let micheline = micheline_string.as_str();
-        // figures out if the passed string is a type or a value
-        let all_types: Vec<&&str> = TYPES_0_PARAM
-            .iter()
-            .chain(TYPES_1_PARAM.iter())
-            .chain(TYPES_2_PARAMS.iter())
-            .collect();
-        let valid_types_regex = Regex::new(
+    // formats parameter by removing trailing spaces
+    let micheline = micheline.trim();
+    // formats line returns and white spaces
+    let format_regex = Regex::new(r"\s{2,}").unwrap();
+    let micheline_string = format_regex.replace_all(micheline, " ").to_string();
+    let micheline = micheline_string.as_str();
+    // figures out if the passed string is a type or a value
+    let all_types: Vec<&&str> = TYPES_0_PARAM
+        .iter()
+        .chain(TYPES_1_PARAM.iter())
+        .chain(TYPES_2_PARAMS.iter())
+        .collect();
+    let valid_types_regex = Regex::new(
+        format!(
+            "{}",
+            all_types
+                .into_iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+                .join("|")
+        )
+        .as_str(),
+    )
+    .unwrap();
+
+    // removes the annotations to get a more precise result
+    let annot_regex = Regex::new(ANNOT_PATTERN).unwrap();
+    let micheline_without_annots = annot_regex.replace_all(micheline, "").to_string();
+    // gets the number of words in the provided string
+    let word_count_regex = Regex::new(r"[\w-]+").unwrap();
+    let words_count = word_count_regex
+        .find_iter(micheline_without_annots.as_str())
+        .count();
+
+    // checks if string could be a type
+    let may_be_type = {
+        // gets the occurrences of types in the string
+        let types_count = valid_types_regex
+            .find_iter(micheline_without_annots.as_str())
+            .count();
+        // calculates percentage of types in the string
+        let percentage = (types_count as f64 / words_count as f64) * 100.0;
+        // estimates if the string includes enough types
+        let threshold = 75.0;
+        if percentage >= threshold {
+            true
+        } else {
+            false
+        }
+    };
+
+    if may_be_type {
+        // checks if the string is a simple type
+        let type_0_param_regex = Regex::new(
             format!(
-                "{}",
-                all_types
-                    .into_iter()
-                    .map(|x| x.to_string())
-                    .collect::<Vec<String>>()
-                    .join("|")
+                r"^\(*({})\s*({})*\)*$",
+                TYPES_0_PARAM.join("|"),
+                ANNOT_PATTERN
             )
             .as_str(),
         )
         .unwrap();
+        match type_0_param_regex.captures(micheline) {
+            Some(caps) => {
+                let main_type = caps.get(1).unwrap().as_str();
+                let annot = match caps.get(2) {
+                    None => String::from(""),
+                    Some(annot) => format!(r#","annots":["{}"]"#, annot.as_str()),
+                };
 
-        // removes the annotations to get a more precise result
-        let annot_regex = Regex::new(ANNOT_PATTERN).unwrap();
-        let micheline_without_annots = annot_regex.replace_all(micheline, "").to_string();
-        // gets the number of words in the provided string
-        let word_count_regex = Regex::new(r"[\w-]+").unwrap();
-        let words_count = word_count_regex
-            .find_iter(micheline_without_annots.as_str())
-            .count();
-
-        // checks if string could be a type
-        let may_be_type = {
-            // gets the occurrences of types in the string
-            let types_count = valid_types_regex
-                .find_iter(micheline_without_annots.as_str())
-                .count();
-            // calculates percentage of types in the string
-            let percentage = (types_count as f64 / words_count as f64) * 100.0;
-            // estimates if the string includes enough types
-            let threshold = 75.0;
-            if percentage >= threshold {
-                true
-            } else {
-                false
+                Ok(format!(r#"{{"prim":"{}"{}}}"#, main_type, annot))
             }
-        };
-
-        if may_be_type {
-            // checks if the string is a simple type
-            let type_0_param_regex = Regex::new(
-                format!(
-                    r"^\(*({})\s*({})*\)*$",
-                    TYPES_0_PARAM.join("|"),
-                    ANNOT_PATTERN
-                )
-                .as_str(),
-            )
-            .unwrap();
-            match type_0_param_regex.captures(micheline) {
-                Some(caps) => {
-                    let main_type = caps.get(1).unwrap().as_str();
-                    let annot = match caps.get(2) {
-                        None => String::from(""),
-                        Some(annot) => format!(r#","annots":["{}"]"#, annot.as_str()),
-                    };
-
-                    Ok(format!(r#"{{"prim":"{}"{}}}"#, main_type, annot))
-                }
-                None => {
-                    // checks if the string is a complex type with 1 parameter
-                    let type_1_param_regex = Regex::new(
-                        format!(
-                            r"^\(*({})\s+({})*(.*)$",
-                            TYPES_1_PARAM.join("|"),
-                            ANNOT_PATTERN
-                        )
-                        .as_str(),
+            None => {
+                // checks if the string is a complex type with 1 parameter
+                let type_1_param_regex = Regex::new(
+                    format!(
+                        r"^\(*({})\s+({})*(.*)$",
+                        TYPES_1_PARAM.join("|"),
+                        ANNOT_PATTERN
                     )
-                    .unwrap();
-                    match type_1_param_regex.captures(micheline) {
-                        Some(caps) => {
-                            let main_type = caps.get(1).unwrap().as_str();
-                            let annot = match caps.get(2) {
-                                None => String::from(""),
-                                Some(annot) => format!(r#","annots":["{}"]"#, annot.as_str()),
-                            };
-                            let param_type = {
-                                let param_cap = caps.get(3).unwrap().as_str();
-                                // removes trailing parens if string started with a parens
-                                if micheline.chars().nth(0).unwrap() == '('
-                                    && param_cap.chars().nth(param_cap.len() - 1).unwrap() == ')'
-                                {
-                                    param_cap.to_string().pop();
-                                }
+                    .as_str(),
+                )
+                .unwrap();
+                match type_1_param_regex.captures(micheline) {
+                    Some(caps) => {
+                        let main_type = caps.get(1).unwrap().as_str();
+                        let annot = match caps.get(2) {
+                            None => String::from(""),
+                            Some(annot) => format!(r#","annots":["{}"]"#, annot.as_str()),
+                        };
+                        let param_type = {
+                            let param_cap = caps.get(3).unwrap().as_str();
+                            // removes trailing parens if string started with a parens
+                            if micheline.chars().nth(0).unwrap() == '('
+                                && param_cap.chars().nth(param_cap.len() - 1).unwrap() == ')'
+                            {
+                                param_cap.to_string().pop();
+                            }
 
-                                param_cap
-                            };
+                            param_cap
+                        };
 
-                            let param_to_json = micheline_to_json(param_type.to_string())?;
+                        let param_to_json = micheline_to_json(param_type.to_string())?;
 
-                            Ok(format!(
-                                r#"{{"prim":"{}","args":[{}]{}}}"#,
-                                main_type, param_to_json, annot
-                            ))
-                        }
-                        None => {
-                            // removes outer parens
-                            let formatted_micheline = remove_outer_parens(micheline);
-                            // println!("\nformatted_micheline: {}", formatted_micheline);
-                            // checks if the string is a complex type with 2 parameters
-                            let type_2_params_regex = Regex::new(
-                                format!(
-                                    r"^({})\s+({})*(.*)$",
-                                    TYPES_2_PARAMS.join("|"),
-                                    ANNOT_PATTERN
-                                )
-                                .as_str(),
+                        Ok(format!(
+                            r#"{{"prim":"{}","args":[{}]{}}}"#,
+                            main_type, param_to_json, annot
+                        ))
+                    }
+                    None => {
+                        // removes outer parens
+                        let formatted_micheline = remove_outer_parens(micheline);
+                        // println!("\nformatted_micheline: {}", formatted_micheline);
+                        // checks if the string is a complex type with 2 parameters
+                        let type_2_params_regex = Regex::new(
+                            format!(
+                                r"^({})\s+({})*(.*)$",
+                                TYPES_2_PARAMS.join("|"),
+                                ANNOT_PATTERN
                             )
-                            .unwrap();
+                            .as_str(),
+                        )
+                        .unwrap();
 
-                            match type_2_params_regex.captures(formatted_micheline) {
-                                None => Err(String::from(
-                                    "The provided string is not a valid Michelson type",
-                                )),
-                                Some(caps) => {
-                                    let main_type = caps.get(1).unwrap().as_str();
-                                    let annot = match caps.get(2) {
-                                        None => String::from(""),
-                                        Some(annot) => {
-                                            format!(r#","annots":["{}"]"#, annot.as_str())
+                        match type_2_params_regex.captures(formatted_micheline) {
+                            None => Err(String::from(
+                                "The provided string is not a valid Michelson type",
+                            )),
+                            Some(caps) => {
+                                let main_type = caps.get(1).unwrap().as_str();
+                                let annot = match caps.get(2) {
+                                    None => String::from(""),
+                                    Some(annot) => {
+                                        format!(r#","annots":["{}"]"#, annot.as_str())
+                                    }
+                                };
+                                let params = caps.get(3).unwrap().as_str().trim();
+
+                                // captures the first part of the parameter by reading the parens
+                                let open_parens = params
+                                    .chars()
+                                    .filter(|&c| c == '(')
+                                    .collect::<Vec<char>>()
+                                    .len();
+                                let closed_parens = params
+                                    .chars()
+                                    .filter(|&c| c == ')')
+                                    .collect::<Vec<char>>()
+                                    .len();
+
+                                let is_first_char_paren = params.chars().nth(0).unwrap() == '(';
+                                let is_last_char_paren =
+                                    params.chars().nth(params.len() - 1).unwrap() == ')';
+                                let nested_parens =
+                                    params.find(") (").is_some() || params.find(")(").is_some();
+
+                                if open_parens == 0 && closed_parens == 0 {
+                                    // no parens, 2 simple types
+                                    split_params(params, formatted_micheline, main_type, annot)
+                                } else if open_parens == 1
+                                    && closed_parens == 1
+                                    && is_first_char_paren
+                                    && is_last_char_paren
+                                    && !nested_parens
+                                {
+                                    split_params(
+                                        &params[1..(params.len() - 1)],
+                                        formatted_micheline,
+                                        main_type,
+                                        annot,
+                                    )
+                                } else {
+                                    let params = {
+                                        if is_first_char_paren
+                                            && is_last_char_paren
+                                            && !nested_parens
+                                        {
+                                            // pattern => (... (...)) || ((...) ...)
+                                            &params[1..(params.len() - 1)]
+                                        } else {
+                                            params
                                         }
                                     };
-                                    let params = caps.get(3).unwrap().as_str().trim();
+                                    let mut open_parens_counter = 0;
+                                    let mut closed_parens_counter = 0;
+                                    let mut left_param = String::from("");
 
-                                    // captures the first part of the parameter by reading the parens
-                                    let open_parens = params
-                                        .chars()
-                                        .filter(|&c| c == '(')
-                                        .collect::<Vec<char>>()
-                                        .len();
-                                    let closed_parens = params
-                                        .chars()
-                                        .filter(|&c| c == ')')
-                                        .collect::<Vec<char>>()
-                                        .len();
-
-                                    let is_first_char_paren = params.chars().nth(0).unwrap() == '(';
-                                    let is_last_char_paren =
-                                        params.chars().nth(params.len() - 1).unwrap() == ')';
-                                    let nested_parens =
-                                        params.find(") (").is_some() || params.find(")(").is_some();
-
-                                    if open_parens == 0 && closed_parens == 0 {
-                                        // no parens, 2 simple types
-                                        split_params(params, formatted_micheline, main_type, annot)
-                                    } else if open_parens == 1
-                                        && closed_parens == 1
-                                        && is_first_char_paren
-                                        && is_last_char_paren
-                                        && !nested_parens
-                                    {
-                                        split_params(
-                                            &params[1..(params.len() - 1)],
-                                            formatted_micheline,
-                                            main_type,
-                                            annot,
-                                        )
-                                    } else {
-                                        let params = {
-                                            if is_first_char_paren
-                                                && is_last_char_paren
-                                                && !nested_parens
-                                            {
-                                                // pattern => (... (...)) || ((...) ...)
-                                                &params[1..(params.len() - 1)]
-                                            } else {
-                                                params
-                                            }
-                                        };
-                                        let mut open_parens_counter = 0;
-                                        let mut closed_parens_counter = 0;
-                                        let mut left_param = String::from("");
-
-                                        for c in params.chars() {
-                                            if c == '('
-                                                && left_param.len() > 0
-                                                && open_parens_counter == 0
-                                            {
-                                                // this is the second arg starting
-                                                break;
-                                            } else if c == '(' {
-                                                open_parens_counter += 1;
-                                            }
-
-                                            if c == ')' {
-                                                closed_parens_counter += 1;
-                                            }
-
-                                            left_param.push(c);
-
-                                            // breaks after the first set of parens is closed
-                                            if open_parens_counter > 0
-                                                && open_parens_counter == closed_parens_counter
-                                            {
-                                                break;
-                                            }
+                                    for c in params.chars() {
+                                        if c == '('
+                                            && left_param.len() > 0
+                                            && open_parens_counter == 0
+                                        {
+                                            // this is the second arg starting
+                                            break;
+                                        } else if c == '(' {
+                                            open_parens_counter += 1;
                                         }
 
-                                        // splits the left param from the whole param string
-                                        let right_param =
-                                            params.replacen(left_param.as_str(), "", 1);
+                                        if c == ')' {
+                                            closed_parens_counter += 1;
+                                        }
 
-                                        // println!(
-                                        //     "open_parens_counter: {}\nclosed_parens_counter: {}\nnested_parens: {}\nis_first_char_paren: {}\nis_last_char_paren: {}\nleft param: `{}` \nright param: `{}` \nmicheline: `{}`\n",
-                                        //     open_parens_counter, closed_parens_counter, nested_parens, is_first_char_paren, is_last_char_paren, left_param, right_param, formatted_micheline
-                                        // );
+                                        left_param.push(c);
 
-                                        // checks params with recursive call
-                                        match (
+                                        // breaks after the first set of parens is closed
+                                        if open_parens_counter > 0
+                                            && open_parens_counter == closed_parens_counter
+                                        {
+                                            break;
+                                        }
+                                    }
+
+                                    // splits the left param from the whole param string
+                                    let right_param = params.replacen(left_param.as_str(), "", 1);
+
+                                    // println!(
+                                    //     "open_parens_counter: {}\nclosed_parens_counter: {}\nnested_parens: {}\nis_first_char_paren: {}\nis_last_char_paren: {}\nleft param: `{}` \nright param: `{}` \nmicheline: `{}`\n",
+                                    //     open_parens_counter, closed_parens_counter, nested_parens, is_first_char_paren, is_last_char_paren, left_param, right_param, formatted_micheline
+                                    // );
+
+                                    // checks params with recursive call
+                                    match (
                                             micheline_to_json(left_param.clone()),
                                             micheline_to_json(right_param.clone()),
                                         ) {
@@ -349,17 +342,33 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
                                                 left_param, right_param, err1, err2
                                             )),
                                         }
-                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        } else {
-            Err(String::from(
-                "Provided string doesn't seem to be a valid Michelson type",
-            ))
+        }
+    } else {
+        // checks if the string may be a Michelson value
+        let simple_value_regex = Regex::new(r"^([0-9-]+|[a-zA-Z_]+|0x[0-9a-f-A-F]+)$").unwrap();
+        match simple_value_regex.captures(micheline) {
+            Some(cap) => {
+                let val = cap.get(1).unwrap().as_str();
+                if val.parse::<i64>().is_ok() {
+                    // numeric value
+                    Ok(format!(r#"{{"int":"{}"}}"#, micheline))
+                } else if &val[..2] == "0x" {
+                    // bytes
+                    Ok(format!(r#"{{"bytes":"{}"}}"#, micheline))
+                } else {
+                    // string
+                    Ok(format!(r#"{{"string":"{}"}}"#, micheline))
+                }
+            }
+            None => Err(String::from(
+                "Provided string doesn't seem to be a valid Michelson type or value",
+            )),
         }
     }
 }
@@ -581,5 +590,24 @@ mod test {
                 "{\"prim\":\"pair\",\"args\":[{\"prim\":\"pair\",\"args\":[{\"prim\":\"pair\",\"args\":[{\"prim\":\"address\",\"annots\":[\"%administrator\"]},{\"prim\":\"big_map\",\"args\":[{\"prim\":\"address\"},{\"prim\":\"pair\",\"args\":[{\"prim\":\"map\",\"args\":[{\"prim\":\"address\"},{\"prim\":\"nat\"}],\"annots\":[\"%approvals\"]},{\"prim\":\"nat\",\"annots\":[\"%balance\"]}]}],\"annots\":[\"%balances\"]}]},{\"prim\":\"pair\",\"args\":[{\"prim\":\"nat\",\"annots\":[\"%debtCeiling\"]},{\"prim\":\"address\",\"annots\":[\"%governorContractAddress\"]}]}]},{\"prim\":\"pair\",\"args\":[{\"prim\":\"pair\",\"args\":[{\"prim\":\"big_map\",\"args\":[{\"prim\":\"string\"},{\"prim\":\"bytes\"}],\"annots\":[\"%metadata\"]},{\"prim\":\"bool\",\"annots\":[\"%paused\"]}]},{\"prim\":\"pair\",\"args\":[{\"prim\":\"big_map\",\"args\":[{\"prim\":\"nat\"},{\"prim\":\"pair\",\"args\":[{\"prim\":\"nat\"},{\"prim\":\"map\",\"args\":[{\"prim\":\"string\"},{\"prim\":\"bytes\"}]}]}],\"annots\":[\"%token_metadata\"]},{\"prim\":\"nat\",\"annots\":[\"%totalSupply\"]}]}]}]}"
             ))
         );
+    }
+
+    #[test]
+    pub fn utils_test_micheline_to_json_simple_values() {
+        let simple_nat_value = String::from("3");
+        let res = micheline_to_json(simple_nat_value);
+        assert!(res == Ok(String::from("{\"int\":\"3\"}")));
+
+        let simple_int_value = String::from("-69");
+        let res = micheline_to_json(simple_int_value);
+        assert!(res == Ok(String::from("{\"int\":\"-69\"}")));
+
+        let simple_string_value = String::from("tezos");
+        let res = micheline_to_json(simple_string_value);
+        assert!(res == Ok(String::from("{\"string\":\"tezos\"}")));
+
+        let simple_bytes_value = String::from("0x7461717569746f");
+        let res = micheline_to_json(simple_bytes_value);
+        assert!(res == Ok(String::from("{\"bytes\":\"0x7461717569746f\"}")));
     }
 }
