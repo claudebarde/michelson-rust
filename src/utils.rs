@@ -351,24 +351,90 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
         }
     } else {
         // checks if the string may be a Michelson value
-        let simple_value_regex = Regex::new(r"^([0-9-]+|[a-zA-Z_]+|0x[0-9a-f-A-F]+)$").unwrap();
-        match simple_value_regex.captures(micheline) {
-            Some(cap) => {
-                let val = cap.get(1).unwrap().as_str();
-                if val.parse::<i64>().is_ok() {
-                    // numeric value
-                    Ok(format!(r#"{{"int":"{}"}}"#, micheline))
-                } else if &val[..2] == "0x" {
-                    // bytes
-                    Ok(format!(r#"{{"bytes":"{}"}}"#, micheline))
-                } else {
-                    // string
-                    Ok(format!(r#"{{"string":"{}"}}"#, micheline))
+        // looking for Unit, True, False, None
+        if micheline == "Unit" {
+            Ok(format!(r#"{{"prim":"{}"}}"#, micheline))
+        } else if micheline == "True" || micheline == "False" {
+            Ok(format!(r#"{{"prim":"{}"}}"#, micheline))
+        } else if micheline == "None" {
+            Ok(format!(r#"{{"prim":"{}"}}"#, micheline))
+        } else {
+            // looking for numbers, strings or bytes
+            let simple_value_regex =
+                Regex::new(r#"^([0-9-]+|[a-zA-Z_"\r\n\t\\b\\]*|0x[0-9a-fA-F]+)$"#).unwrap();
+            match simple_value_regex.captures(micheline) {
+                Some(cap) => {
+                    let val = cap.get(1).unwrap().as_str();
+                    if val.parse::<i64>().is_ok() {
+                        // numeric value
+                        Ok(format!(r#"{{"int":"{}"}}"#, micheline))
+                    } else if val.len() > 1 && &val[..2] == "0x" {
+                        // bytes
+                        Ok(format!(r#"{{"bytes":"{}"}}"#, micheline))
+                    } else {
+                        // string
+                        Ok(format!(r#"{{"string":"{}"}}"#, micheline))
+                    }
+                }
+                None => {
+                    // looking for Left <value>, Right <value>, Some <value>
+                    let value_1_param_regex = Regex::new(r"^(Left|Right|Some)\s+(.*)$").unwrap();
+                    match value_1_param_regex.captures(micheline) {
+                        Some(caps) => {
+                            let main_value = caps.get(1).unwrap().as_str();
+                            let param_value = caps.get(2).unwrap().as_str();
+
+                            match micheline_to_json(param_value.to_string()) {
+                                Ok(res) => Ok(format!(r#"{{"prim":"{}","args":[{}]}}"#, main_value, res)),
+                                Err(err) => Err(format!("Argument for provided value `{}` seems to be wrong: `{}`, error: {}", main_value, param_value, err))
+                            }
+                        }
+                        None => {
+                            // looking for Pair <data> <data>
+                            let pair_regex = Regex::new(r"Pair\s+(.*)").unwrap();
+                            match pair_regex.captures(micheline) {
+                                Some(caps) => {
+                                    let args = caps.get(1).unwrap().as_str();
+
+                                    if args.len() < 1 {
+                                        // unexpected empty string
+                                        Err(format!("Unexpected empty argument for Pair value: {}", micheline))
+                                    } else if args.find("(").is_some() {
+                                        Err(String::from("test"))
+                                    } else if args.find("{").is_some() {
+                                        Err(String::from("test"))
+                                    } else if args.find("\"").is_some() {
+                                        if args.chars().nth(0).unwrap() == '"' {
+                                            // string is first argument
+                                            todo!()
+                                        } else if args.chars().nth(args.len() - 1).unwrap() == '"' {
+                                            // string is last argument
+                                            todo!()
+                                        } else {
+                                            Err(String::from("test"))
+                                        }
+                                    } else {
+                                        // numeric or byte values
+                                        let vals = args.split_whitespace().into_iter().collect::<Vec<&str>>();
+                                        if vals.len() == 2 {
+                                            match (micheline_to_json(vals[0].to_string()), micheline_to_json(vals[1].to_string())) {
+                                                (Ok(left), Ok(right)) => Ok(format!(r#"{{"prim":"Pair","args":[{},{}]}}"#, left, right)),
+                                                (Ok(_), Err(err)) | (Err(err), Ok(_)) => Err(format!("Error parsing Pair value: {}, error: {}", micheline, err)),
+                                                _ => Err(format!("Error parsing Pair value: {}", micheline))
+                                            }
+                                        } else {
+                                            Err(format!("Found numeric or byte value for Pair, but couldn't split it: {}", micheline))
+                                        }
+                                    }
+                                }
+                                None => Err(String::from(
+                                    "Provided string doesn't seem to be a valid Michelson type or value",
+                                ))
+                            }
+                        }
+                    }
                 }
             }
-            None => Err(String::from(
-                "Provided string doesn't seem to be a valid Michelson type or value",
-            )),
         }
     }
 }
@@ -606,8 +672,73 @@ mod test {
         let res = micheline_to_json(simple_string_value);
         assert!(res == Ok(String::from("{\"string\":\"tezos\"}")));
 
+        let empty_string_value = String::from("");
+        let res = micheline_to_json(empty_string_value);
+        assert!(res == Ok(String::from("{\"string\":\"\"}")));
+
         let simple_bytes_value = String::from("0x7461717569746f");
         let res = micheline_to_json(simple_bytes_value);
         assert!(res == Ok(String::from("{\"bytes\":\"0x7461717569746f\"}")));
+
+        let unit_value = String::from("Unit");
+        let res = micheline_to_json(unit_value);
+        assert!(res == Ok(String::from("{\"prim\":\"Unit\"}")));
+
+        let none_value = String::from("None");
+        let res = micheline_to_json(none_value);
+        assert!(res == Ok(String::from("{\"prim\":\"None\"}")));
+
+        let true_value = String::from("True");
+        let res = micheline_to_json(true_value);
+        assert!(res == Ok(String::from("{\"prim\":\"True\"}")));
+
+        let false_value = String::from("False");
+        let res = micheline_to_json(false_value);
+        assert!(res == Ok(String::from("{\"prim\":\"False\"}")));
+    }
+
+    pub fn utils_test_micheline_to_json_1_param_values() {
+        let some_value = String::from("Some 69");
+        let res = micheline_to_json(some_value);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"Some\",\"args\":[{\"int\":\"69\"}]}"
+            ))
+        );
+
+        let left_value = String::from("Left \"tezos\"");
+        let res = micheline_to_json(left_value);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"Left\",\"args\":[{\"string\":\"tezos\"}]}"
+            ))
+        );
+
+        let right_value = String::from("Right \"True\"");
+        let res = micheline_to_json(right_value);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"Right\",\"args\":[{\"prim\":\"True\"}]}"
+            ))
+        );
+    }
+
+    #[test]
+    pub fn utils_test_micheline_to_json_pair_values() {
+        let simple_pair_value = String::from("Pair 5 6");
+        let res = micheline_to_json(simple_pair_value);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"Pair\",\"args\":[{\"int\":\"5\"},{\"int\":\"6\"}]}"
+            ))
+        );
+
+        let simple_pair_value = String::from("Pair \"tezos\" 45");
+        let res = micheline_to_json(simple_pair_value);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"Pair\",\"args\":[{\"string\":\"tezos\"},{\"int\":\"45\"}]}"
+            ))
+        );
     }
 }
