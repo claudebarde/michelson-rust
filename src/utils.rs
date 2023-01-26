@@ -399,20 +399,40 @@ pub fn micheline_to_json(micheline: String) -> Result<String, String> {
                                     if args.len() < 1 {
                                         // unexpected empty string
                                         Err(format!("Unexpected empty argument for Pair value: {}", micheline))
+                                    } else if args.find("\"").is_some() {
+                                        if args.chars().nth(0).unwrap() == '"' {
+                                            // string is first argument
+                                            let arg_regex = Regex::new(r#"^"(.+)"\s+(.+)"#).unwrap();
+                                            match arg_regex.captures(args) {
+                                                None => Err(format!("Error parsing Pair parameters: {}", args)),
+                                                Some(caps) => {
+                                                    let first_arg = caps.get(1).unwrap().as_str();
+                                                    let second_arg = caps.get(2).unwrap().as_str();
+                                                    // checks the second argument
+                                                    let second_arg = micheline_to_json(second_arg.to_string())?;
+                                                    Ok(format!(r#"{{"prim":"Pair","args":[{{"string":"{}"}},{}]}}"#, first_arg, second_arg))
+                                                }
+                                            }
+                                        } else if args.chars().nth(args.len() - 1).unwrap() == '"' {
+                                            // string is last argument
+                                            let arg_regex = Regex::new(r#"(.*)\s+"(.+)"$"#).unwrap();
+                                            match arg_regex.captures(args) {
+                                                None => Err(format!("Error parsing Pair parameters: {}", args)),
+                                                Some(caps) => {
+                                                    let first_arg = caps.get(1).unwrap().as_str();
+                                                    let second_arg = caps.get(2).unwrap().as_str();
+                                                    // checks the second argument
+                                                    let first_arg = micheline_to_json(first_arg.to_string())?;
+                                                    Ok(format!(r#"{{"prim":"Pair","args":[{},{{"string":"{}"}}]}}"#, first_arg, second_arg))
+                                                }
+                                            }
+                                        } else {
+                                            Err(String::from("test"))
+                                        }
                                     } else if args.find("(").is_some() {
                                         Err(String::from("test"))
                                     } else if args.find("{").is_some() {
                                         Err(String::from("test"))
-                                    } else if args.find("\"").is_some() {
-                                        if args.chars().nth(0).unwrap() == '"' {
-                                            // string is first argument
-                                            todo!()
-                                        } else if args.chars().nth(args.len() - 1).unwrap() == '"' {
-                                            // string is last argument
-                                            todo!()
-                                        } else {
-                                            Err(String::from("test"))
-                                        }
                                     } else {
                                         // numeric or byte values
                                         let vals = args.split_whitespace().into_iter().collect::<Vec<&str>>();
@@ -738,6 +758,23 @@ mod test {
         assert!(
             res == Ok(String::from(
                 "{\"prim\":\"Pair\",\"args\":[{\"string\":\"tezos\"},{\"int\":\"45\"}]}"
+            ))
+        );
+
+        let simple_pair_value = String::from("Pair 45 \"tezos\"");
+        let res = micheline_to_json(simple_pair_value);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"Pair\",\"args\":[{\"int\":\"45\"},{\"string\":\"tezos\"}]}"
+            ))
+        );
+
+        let simple_nested_pair_value = String::from("Pair (Pair 45 50) \"tezos\"");
+        let res = micheline_to_json(simple_nested_pair_value);
+        println!("{:?}", res);
+        assert!(
+            res == Ok(String::from(
+                "{\"prim\":\"Pair\",\"args\":[{\"prim\":\"pair\",\"args\":[{\"int\":\"45\"},{\"int\":\"50\"}]},{\"string\":\"tezos\"}]}"
             ))
         );
     }
