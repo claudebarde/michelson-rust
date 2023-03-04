@@ -89,9 +89,9 @@ impl StackFuncs for Stack {
         let temp_stack = vec![new_el];
 
         // returns the new stack
-        stack_start
+        temp_stack
             .into_iter()
-            .chain(temp_stack.into_iter())
+            .chain(stack_start.into_iter())
             .collect()
     }
     /// Helper function to check if the stack has the correct properties

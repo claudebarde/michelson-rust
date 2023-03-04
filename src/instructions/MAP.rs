@@ -21,70 +21,57 @@ pub fn run(
         MValue::List(list) => {
             // checks that all the elements of the list are of the same type
             list.check_elements_type(this_instruction)?;
+            // removes the list from the stack
+            let (_, stack_without_list) = stack.remove_at(options.pos);
             // loops through the list and applies instructions
             match args {
                 None => Ok((stack, stack_snapshots)), // an empty instruction block is possible, just returning the current stack
                 Some (args_) => {
-                    // converts serde_json Value to string to run the code
-                    let code_block_json = 
-                        args_
-                        .into_iter()
-                        .map(|el| serde_json::to_string(el).unwrap())
-                        .collect::<Vec<String>>()
-                        .join(",");
-                    println!("..{}..", code_block_json);
-                    // iterates through the list, pushes the current element to the stack and applies instructions
-                    let mut new_list_els: Vec<MValue> = vec![];
-                    let (new_stack, stack_snapshots) = 
-                        list
-                        .value
-                        .into_iter()
-                        .try_fold(
-                            (stack.clone(), stack_snapshots), 
-                            |(stack, stack_snapshots), list_el| {
-                                let stack_to_process = stack.push(list_el, this_instruction);
-                                match parser::run(&code_block_json, stack_to_process, stack_snapshots) {
-                                    Ok(result) => {
-                                        if result.has_failed {
-                                            Err(String::from("Block code for instruction MAP could not be parsed"))
-                                        } else {
-                                            // removes the elements that was created from the stack
-                                            let (new_el, truncated_stack) = result.stack.remove_at(0);
-                                            // verifies that the element is of the type required by the list
-                                            if new_el.value.get_type() == list.m_type {
-                                                // saves the new element in the list of new elements
-                                                new_list_els.push(new_el.value);
-                                                // returns the new stack and stack snapshots
-                                                Ok(
-                                                    (
-                                                        truncated_stack, 
-                                                        result.stack_snapshots                                                     
+                    if args_.len() == 1 {
+                        // converts serde_json Value to string to run the code
+                        let code_block_json = serde_json::to_string(&args_[0]).unwrap();
+                        // iterates through the list, pushes the current element to the stack and applies instructions
+                        let mut new_list_els: Vec<MValue> = vec![];
+                        let (new_stack, stack_snapshots) = 
+                            list
+                            .value
+                            .into_iter()
+                            .try_fold(
+                                (stack_without_list, stack_snapshots), 
+                                |(stack, stack_snapshots), list_el| {
+                                    let stack_to_process = stack.push(list_el, this_instruction);
+                                        println!("{:?}", stack_to_process);
+                                        match parser::run(&code_block_json, stack_to_process, stack_snapshots) {
+                                            Ok(result) => {
+                                                if result.has_failed {
+                                                    Err(String::from("Block code for instruction MAP could not be parsed"))
+                                                } else {
+                                                    // removes the elements that was created from the stack
+                                                    let (new_el, truncated_stack) = result.stack.remove_at(0);
+                                                    // saves the new element in the list of new elements
+                                                    new_list_els.push(new_el.value);
+                                                    // returns the new stack and stack snapshots
+                                                    Ok(
+                                                        (
+                                                            truncated_stack, 
+                                                            result.stack_snapshots                                                     
+                                                        )
                                                     )
-                                                )
-                                            } else {
-                                                Err(
-                                                    format!(
-                                                        "Unexpected type for list element created by MAP instruction, expected {} but got {}",
-                                                        new_el.value.get_type().to_string(),
-                                                        list.m_type.to_string()
-                                                    )
-                                                )
-                                            }
+                                                }
+                                            },
+                                            Err(err) => Err(err)
                                         }
-                                    },
-                                    Err(err) => Err(err)
-                                }
-                        })?;
-
-                    // creates the new list
-                    let list_el = StackElement::new(
-                        MValue::List(CollectionValue { m_type: list.m_type, value: Box::new(new_list_els)}),
-                        this_instruction
-                    );
-                    // pushes the new list onto the stack
-                    let new_stack = new_stack.replace(vec![list_el], options.pos);
-
-                    Ok((new_stack, stack_snapshots))
+                                })?;
+    
+                        // creates the new list
+                        let new_list = MValue::List(CollectionValue { m_type: list.m_type, value: Box::new(new_list_els)});
+                        // pushes the new list onto the stack
+                        let new_stack = new_stack.push(new_list, this_instruction);
+    
+                        Ok((new_stack, stack_snapshots))
+                    } else {
+                        Err("Argument for MAP is an empty array, expected an array with 1 element".to_string())
+                    }
                 }
             }
         },
@@ -123,8 +110,7 @@ mod test {
         };
 
         let args = vec![
-            json!({ "prim": "PUSH", "args": [{"prim":"nat"}, {"int": 3}] }),
-            json!({ "prim": "MUL" })
+            json!([{ "prim": "PUSH", "args": [{"prim":"nat"}, {"int": "3"}] }, { "prim": "MUL" }])
         ];
 
         assert!(initial_stack.len() == 3);
@@ -142,6 +128,8 @@ mod test {
                 assert_eq!(stack[0].instruction, Instruction::MAP);
                 assert_eq!(stack[1].value, MValue::Int(-22));
                 assert_eq!(stack[1].instruction, Instruction::INIT);
+                assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
+                assert_eq!(stack[2].instruction, Instruction::INIT);
             }
         }
     }
