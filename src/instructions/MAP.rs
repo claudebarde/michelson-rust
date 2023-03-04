@@ -1,6 +1,6 @@
 // use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{MValue, CollectionValue};
+use crate::m_types::{MValue, CollectionValue, MType};
 use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
 use crate::parser;
 use serde_json::Value;
@@ -19,20 +19,22 @@ pub fn run(
     // checks that the value on the stack is correct
     let (new_stack, stack_snapshots) = match stack[options.pos].get_val() {
         MValue::List(list) => {
-            // checks that all the elements of the list are of the same type
-            list.check_elements_type(this_instruction)?;
-            // removes the list from the stack
-            let (_, stack_without_list) = stack.remove_at(options.pos);
-            // loops through the list and applies instructions
-            match args {
-                None => Ok((stack, stack_snapshots)), // an empty instruction block is possible, just returning the current stack
-                Some (args_) => {
-                    if args_.len() == 1 {
-                        // converts serde_json Value to string to run the code
-                        let code_block_json = serde_json::to_string(&args_[0]).unwrap();
-                        // iterates through the list, pushes the current element to the stack and applies instructions
-                        let mut new_list_els: Vec<MValue> = vec![];
-                        let (new_stack, stack_snapshots) = 
+            if list.value.len() != 0 {
+                // checks that all the elements of the list are of the same type
+                list.check_elements_type(this_instruction)?;
+                // removes the list from the stack
+                let (_, stack_without_list) = stack.remove_at(options.pos);
+                // loops through the list and applies instructions
+                match args {
+                    None => Ok((stack, stack_snapshots)), // an empty instruction block is possible, just returning the current stack
+                    Some (args_) => {
+                        if args_.len() == 1 {
+                            let list_len = list.value.len();
+                            // converts serde_json Value to string to run the code
+                            let code_block_json = serde_json::to_string(&args_[0]).unwrap();
+                            // iterates through the list, pushes the current element to the stack and applies instructions
+                            let mut new_list: Vec<MValue> = vec![];
+                            let (new_stack, stack_snapshots) = 
                             list
                             .value
                             .into_iter()
@@ -40,43 +42,60 @@ pub fn run(
                                 (stack_without_list, stack_snapshots), 
                                 |(stack, stack_snapshots), list_el| {
                                     let stack_to_process = stack.push(list_el, this_instruction);
-                                        println!("{:?}", stack_to_process);
-                                        match parser::run(&code_block_json, stack_to_process, stack_snapshots) {
-                                            Ok(result) => {
-                                                if result.has_failed {
-                                                    Err(String::from("Block code for instruction MAP could not be parsed"))
-                                                } else {
-                                                    // removes the elements that was created from the stack
-                                                    let (new_el, truncated_stack) = result.stack.remove_at(0);
-                                                    // saves the new element in the list of new elements
-                                                    new_list_els.push(new_el.value);
-                                                    // returns the new stack and stack snapshots
-                                                    Ok(
-                                                        (
-                                                            truncated_stack, 
-                                                            result.stack_snapshots                                                     
-                                                        )
+                                    println!("{:?}", stack_to_process);
+                                    match parser::run(&code_block_json, stack_to_process, stack_snapshots) {
+                                        Ok(result) => {
+                                            if result.has_failed {
+                                                Err(String::from("Block code for instruction MAP could not be parsed"))
+                                            } else {
+                                                // removes the elements that was created from the stack
+                                                let (new_el, truncated_stack) = result.stack.remove_at(0);
+                                                // saves the new element in the list of new elements
+                                                new_list.push(new_el.value);
+                                                // returns the new stack and stack snapshots
+                                                Ok(
+                                                    (
+                                                        truncated_stack, 
+                                                        result.stack_snapshots                                                     
                                                     )
-                                                }
-                                            },
-                                            Err(err) => Err(err)
-                                        }
-                                })?;
-    
-                        // creates the new list
-                        let new_list = MValue::List(CollectionValue { m_type: list.m_type, value: Box::new(new_list_els)});
-                        // pushes the new list onto the stack
-                        let new_stack = new_stack.push(new_list, this_instruction);
-    
-                        Ok((new_stack, stack_snapshots))
-                    } else {
-                        Err("Argument for MAP is an empty array, expected an array with 1 element".to_string())
+                                                )
+                                            }
+                                        },
+                                        Err(err) => Err(err)
+                                    }
+                                })?;                                
+                                // checks that the new list length is the same as the original list
+                                if list_len == new_list.len() {
+                                    // checks that all the elements in the new list are of the same type
+                                    // and figures out the type of the elements of the new list
+                                    let list_el_type = MType::check_vec_els_type(&new_list, this_instruction)?;
+                                    // creates the new list
+                                    let collection = CollectionValue { 
+                                        m_type: list_el_type, 
+                                        value: Box::new(new_list)
+                                    };
+                                    let new_list = MValue::List(collection);
+                                    // pushes the new list onto the stack
+                                    let new_stack = new_stack.push(new_list, this_instruction);
+                                    
+                                    Ok((new_stack, stack_snapshots))
+                                } else {
+                                    Err(
+                                        format!("List generated by MAP instruction has a different length, expected a length of {}, but got {}", list_len, new_list.len())
+                                    )
+                                }                        
+                            } else {
+                                Err("Argument for MAP is an empty array, expected an array with 1 element".to_string())
+                            }
+                        }
                     }
+                } else {
+                    // returns now if there are no element in the list
+                    Ok((stack, stack_snapshots))
                 }
-            }
-        },
-        MValue::Map(map) => Ok((stack, stack_snapshots)),
-        _ => Err(format!(
+            },
+            MValue::Map(map) => Ok((stack, stack_snapshots)),
+            _ => Err(format!(
             "Invalid type on the stack at position {} for instruction `{:?}`, expected list or map, but got {:?}",
             options.pos,
             this_instruction,
@@ -91,7 +110,7 @@ pub fn run(
 mod test {
     use super::*;
     use crate::instructions::RunOptionsContext;
-    use crate::m_types::{MType};
+    use crate::m_types::{MType, PairValue};
     use serde_json::json;
 
     // PASSING
@@ -123,6 +142,67 @@ mod test {
                     CollectionValue { 
                         m_type: MType::Nat, 
                         value: Box::new(vec![MValue::Nat(6), MValue::Nat(9), MValue::Nat(12), MValue::Nat(15)]) 
+                    }
+                ));
+                assert_eq!(stack[0].instruction, Instruction::MAP);
+                assert_eq!(stack[1].value, MValue::Int(-22));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+                assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
+                assert_eq!(stack[2].instruction, Instruction::INIT);
+            }
+        }
+    }
+
+    #[test]
+    fn map_success_list_of_pairs() {
+        let initial_list = vec![
+            MValue::Pair(PairValue::new(MValue::Nat(3), MValue::String(String::from("pair_1")))),
+            MValue::Pair(PairValue::new(MValue::Nat(5), MValue::String(String::from("pair_2")))),
+            MValue::Pair(PairValue::new(MValue::Nat(7), MValue::String(String::from("pair_3")))),
+            MValue::Pair(PairValue::new(MValue::Nat(9), MValue::String(String::from("pair_4"))))
+        ];
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::List(CollectionValue { 
+                m_type: MType::Pair(Box::new((MType::Nat, MType::String))), 
+                value: Box::new(initial_list) }), 
+                Instruction::INIT),
+            StackElement::new(MValue::Int(-22), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        let args = vec![
+            json!([
+                { "prim": "UNPAIR" },
+                { "prim": "PUSH", "args": [{"prim": "nat"}, {"int": "2"}] },
+                { "prim": "ADD" },
+                { "prim": "SWAP" },
+                { "prim": "PUSH", "args": [{"prim": "string"}, {"string": "_good"}] },
+                { "prim": "SWAP" },
+                { "prim": "CONCAT" },
+                { "prim": "PAIR" }
+            ])
+        ];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, Some(&args), &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 3);
+                assert_eq!(stack[0].value, MValue::List(
+                    CollectionValue { 
+                        m_type: MType::Pair(Box::new((MType::String, MType::Nat))), 
+                        value: Box::new(vec![
+                            MValue::Pair(PairValue::new(MValue::String(String::from("pair_1_good")), MValue::Nat(5))),
+                            MValue::Pair(PairValue::new(MValue::String(String::from("pair_2_good")), MValue::Nat(7))),
+                            MValue::Pair(PairValue::new(MValue::String(String::from("pair_3_good")), MValue::Nat(9))),
+                            MValue::Pair(PairValue::new(MValue::String(String::from("pair_4_good")), MValue::Nat(11)))
+                        ]) 
                     }
                 ));
                 assert_eq!(stack[0].instruction, Instruction::MAP);

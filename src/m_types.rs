@@ -140,6 +140,36 @@ impl MType {
             MType::Big_map(_) => String::from("big_map"),
         }
     }
+
+    /// checks if all the elements in a vector are of the expected type
+    pub fn check_vec_els_type(
+        els: &Vec<MValue>,
+        current_instruction: Instruction,
+    ) -> Result<MType, String> {
+        if els.len() == 0 {
+            Err("The vector is empty".to_string())
+        } else {
+            let expected_type = els[0].get_type();
+            let mut els_res = els.into_iter().map(|val| {
+                let el_type = val.get_type();
+                if el_type == expected_type {
+                    Ok(el_type)
+                } else {
+                    Err(format!(
+                        "Expected values of type {} in vector for `{:?}`, but got a value of type {}",
+                        expected_type.to_string(),
+                        current_instruction,
+                        el_type.to_string()
+                    ))
+                }
+            });
+            // finds the first error and returns it if there is one
+            match els_res.find(|x| x.is_err()) {
+                None => Ok(expected_type),
+                Some(err) => err,
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
