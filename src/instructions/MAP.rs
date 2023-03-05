@@ -1,7 +1,7 @@
 // use crate::errors::{display_error, ErrorCode};
 use crate::instructions::{Instruction, RunOptions};
-use crate::m_types::{MValue, CollectionValue, MType};
-use crate::stack::{Stack, StackElement, StackFuncs, StackSnapshots};
+use crate::m_types::{MValue, CollectionValue, MType, PairValue};
+use crate::stack::{Stack, StackFuncs, StackSnapshots};
 use crate::parser;
 use serde_json::Value;
 
@@ -94,7 +94,94 @@ pub fn run(
                     Ok((stack, stack_snapshots))
                 }
             },
-            MValue::Map(map) => Ok((stack, stack_snapshots)),
+            MValue::Map(map) => {
+                match map.size() {
+                    Ok(map_size) => {
+                        if map_size != 0 {
+                            // removes the map from the stack
+                            let (_, stack_without_map) = stack.remove_at(options.pos);
+                            // loops through the list and applies instructions
+                            match args {
+                                None => Ok((stack, stack_snapshots)), // an empty instruction block is possible, just returning the current stack
+                                Some (args_) => {
+                                    if args_.len() == 1 {
+                                        // converts serde_json Value to string to run the code
+                                        let code_block_json = serde_json::to_string(&args_[0]).unwrap();
+                                        // iterates through the map, pushes the key and value as a pair to the stack and applies instructions
+                                        let mut new_map_els: Vec<(MValue, MValue)> = vec![];
+                                        let mut map_key_type: Option<MType> = None;
+                                        let (new_stack, stack_snapshots) = 
+                                            map
+                                            .value
+                                            .into_iter()
+                                            .try_fold(
+                                                (stack_without_map, stack_snapshots), 
+                                                |(stack, stack_snapshots), pair| {
+                                                    let (key, value) = pair;
+                                                    // checks that the type is the same
+                                                    // TODO: it might be wiser to check that the key type is consistent throughout the loop
+                                                    map_key_type = Some(key.get_type());
+                                                    // creates the pair to be pushed to the stack
+                                                    let map_el = MValue::Pair(PairValue::new(key.clone(), value));
+                                                    let stack_to_process = stack.push(map_el, this_instruction);
+                                                    println!("{:?}", stack_to_process);
+                                                    match parser::run(&code_block_json, stack_to_process, stack_snapshots) {
+                                                        Ok(result) => {
+                                                            if result.has_failed {
+                                                                Err(String::from("Block code for instruction MAP could not be parsed"))
+                                                            } else {
+                                                                // removes the elements that was created from the stack
+                                                                let (new_el, truncated_stack) = result.stack.remove_at(0);
+                                                                // saves the new element in the list of new elements
+                                                                new_map_els.push((key, new_el.value));
+                                                                // returns the new stack and stack snapshots
+                                                                Ok(
+                                                                    (
+                                                                        truncated_stack, 
+                                                                        result.stack_snapshots                                                     
+                                                                    )
+                                                                )
+                                                            }
+                                                        },
+                                                        Err(err) => Err(err)
+                                                    }
+                                                })?;                                
+                                            // checks that the length of the vector with the returned elements is the same as the original map
+                                            if map_size == new_map_els.len() {
+                                                match map_key_type {
+                                                    None => Err("No key type for the map created by MAP instruction was generated".to_string()),
+                                                    Some(key_type) => {
+                                                        // checks that all the elements in the new list are of the same type
+                                                        // and figures out the type of the elements of the new list
+                                                        let map_value_type = MType::check_vec_els_type(
+                                                            &new_map_els.clone().into_iter().map(|el| el.1).collect(), 
+                                                            this_instruction
+                                                        )?;
+                                                        // creates the new map
+                                                        let new_map = MValue::new_map(key_type, map_value_type, new_map_els);
+                                                        // pushes the new list onto the stack
+                                                        let new_stack = new_stack.push(new_map, this_instruction);
+                                                        
+                                                        Ok((new_stack, stack_snapshots))
+                                                    }
+                                                }
+                                            } else {
+                                                Err(
+                                                    format!("Map generated by MAP instruction has a different length, expected a length of {}, but got {}", map_size, new_map_els.len())
+                                                )
+                                            }
+                                    } else {
+                                        Err("Argument for MAP is an empty array, expected an array with 1 element".to_string())
+                                    }
+                                }}
+                        } else {
+                            // the map is empty
+                            Ok((stack, stack_snapshots))
+                        }
+                    }
+                    Err(err) => Err(format!("Error while reading the size of a map at MAP instruction: {}", err))
+                }
+            },
             _ => Err(format!(
             "Invalid type on the stack at position {} for instruction `{:?}`, expected list or map, but got {:?}",
             options.pos,
@@ -111,6 +198,7 @@ mod test {
     use super::*;
     use crate::instructions::RunOptionsContext;
     use crate::m_types::{MType, PairValue};
+    use crate::stack::StackElement;
     use serde_json::json;
 
     // PASSING

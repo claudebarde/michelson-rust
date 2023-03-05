@@ -176,6 +176,7 @@ mod tests {
         ) {
             Ok((stack, _)) => {
                 let expected_map = MapValue {
+                    is_map: true,
                     key_type: MType::Nat,
                     value_type: MType::String,
                     value: HashMap::new(),
@@ -183,7 +184,7 @@ mod tests {
                 assert!(stack.len() == 3);
                 match &stack[0].value {
                     MValue::Map(map) => {
-                        assert_eq!(map.size(), 0);
+                        assert_eq!(map.size(), Ok(0));
                         assert_eq!(*map, expected_map)
                     }
                     _ => assert!(false),
@@ -220,6 +221,7 @@ mod tests {
         ) {
             Ok((stack, _)) => {
                 let expected_big_map = MapValue {
+                    is_map: false,
                     key_type: MType::Nat,
                     value_type: MType::String,
                     value: HashMap::new(),

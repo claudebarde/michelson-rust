@@ -349,6 +349,7 @@ impl CollectionValue {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MapValue {
+    pub is_map: bool, // MapValue is used to represent both maps and big_maps
     pub key_type: MType,
     pub value_type: MType,
     pub value: map<MValue, MValue>,
@@ -363,8 +364,25 @@ impl Hash for MapValue {
 }
 
 impl MapValue {
-    pub fn size(&self) -> usize {
-        self.value.keys().len()
+    /// returns the size of the map
+    pub fn size(&self) -> Result<usize, String> {
+        if self.is_map {
+            Ok(self.value.keys().len())
+        } else {
+            Err("Cannot read the size of a big_map".to_string())
+        }
+    }
+
+    pub fn get(&self, key: MValue) -> Result<Option<&MValue>, String> {
+        if key.get_type() == self.key_type {
+            Ok(self.value.get(&key))
+        } else {
+            Err(format!(
+                "Expected key of type {}, but got {}",
+                self.key_type.to_string(),
+                key.get_type().to_string()
+            ))
+        }
     }
 }
 
@@ -650,6 +668,7 @@ impl MValue {
     /// creates a new empty map
     pub fn new_empty_map(key_type: MType, value_type: MType) -> MValue {
         MValue::Map(MapValue {
+            is_map: true,
             key_type,
             value_type,
             value: HashMap::new(),
@@ -661,6 +680,7 @@ impl MValue {
         // TODO: verify that the element in the map are of the same MType
         // TODO: verify that the elements can be map keys
         MValue::Map(MapValue {
+            is_map: true,
             key_type,
             value_type,
             value: elements.into_iter().collect(),
@@ -670,6 +690,7 @@ impl MValue {
     /// creates a new empty big_map
     pub fn new_empty_big_map(key_type: MType, value_type: MType) -> MValue {
         MValue::Big_map(MapValue {
+            is_map: false,
             key_type,
             value_type,
             value: HashMap::new(),
@@ -685,6 +706,7 @@ impl MValue {
         // TODO: verify that the element in the map are of the same MType
         // TODO: verify that the elements can be map keys
         MValue::Big_map(MapValue {
+            is_map: false,
             key_type,
             value_type,
             value: elements.into_iter().collect(),
