@@ -42,7 +42,6 @@ pub fn run(
                                 (stack_without_list, stack_snapshots), 
                                 |(stack, stack_snapshots), list_el| {
                                     let stack_to_process = stack.push(list_el, this_instruction);
-                                    println!("{:?}", stack_to_process);
                                     match parser::run(&code_block_json, stack_to_process, stack_snapshots) {
                                         Ok(result) => {
                                             if result.has_failed {
@@ -124,7 +123,6 @@ pub fn run(
                                                     // creates the pair to be pushed to the stack
                                                     let map_el = MValue::Pair(PairValue::new(key.clone(), value));
                                                     let stack_to_process = stack.push(map_el, this_instruction);
-                                                    println!("{:?}", stack_to_process);
                                                     match parser::run(&code_block_json, stack_to_process, stack_snapshots) {
                                                         Ok(result) => {
                                                             if result.has_failed {
@@ -182,6 +180,46 @@ pub fn run(
                     Err(err) => Err(format!("Error while reading the size of a map at MAP instruction: {}", err))
                 }
             },
+            MValue::Option(option) => {
+                // stack is left unchanged if option is None
+                match *option.value {
+                    None => Ok((stack, stack_snapshots)),
+                    Some(option) => {
+                        // removes the option from the stack
+                        let (_, stack_without_option) = stack.remove_at(options.pos);
+                        // loops through the list and applies instructions
+                        match args {
+                            None => Ok((stack_without_option, stack_snapshots)), // an empty instruction block is possible, just returning the current stack
+                            Some (args_) => {
+                                if args_.len() == 1 {
+                                    // converts serde_json Value to string to run the code
+                                    let code_block_json = serde_json::to_string(&args_[0]).unwrap();
+                                    // processes the code
+                                    let stack_to_process = stack_without_option.push(option, this_instruction);
+                                    match parser::run(&code_block_json, stack_to_process, stack_snapshots) {
+                                        Ok(result) => {
+                                            if result.has_failed {
+                                                Err(String::from("Block code for instruction MAP could not be parsed"))
+                                            } else {
+                                                // returns the new stack and stack snapshots
+                                                Ok(
+                                                    (
+                                                        result.stack, 
+                                                        result.stack_snapshots                                                     
+                                                    )
+                                                )
+                                            }
+                                        },
+                                        Err(err) => Err(err)
+                                    }
+                                } else {
+                                    Err("Argument for MAP is an empty array, expected an array with 1 element".to_string())
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             _ => Err(format!(
             "Invalid type on the stack at position {} for instruction `{:?}`, expected list or map, but got {:?}",
             options.pos,
@@ -197,7 +235,7 @@ pub fn run(
 mod test {
     use super::*;
     use crate::instructions::RunOptionsContext;
-    use crate::m_types::{MType, PairValue};
+    use crate::m_types::{MType, PairValue, OptionValue};
     use crate::stack::StackElement;
     use serde_json::json;
 
@@ -408,6 +446,39 @@ mod test {
                 assert_eq!(stack[0].value, output_map);
                 assert_eq!(stack[0].instruction, Instruction::MAP);
                 assert_eq!(stack[1].value, MValue::Int(33));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+                assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
+                assert_eq!(stack[2].instruction, Instruction::INIT);
+            }
+        }
+    }
+
+    #[test]
+    fn map_success_with_option() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Option(OptionValue::new(Some(MValue::Nat(6)), MType::Nat)), Instruction::INIT),
+            StackElement::new(MValue::Int(45), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        let args = vec![
+            json!([{ "prim": "PUSH", "args": [{"prim":"nat"}, {"int": "3"}] }, { "prim": "MUL" }])
+        ];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, Some(&args), &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 3);
+                assert_eq!(stack[0].value, MValue::Nat(18));
+                assert_eq!(stack[0].instruction, Instruction::MUL);
+                assert_eq!(stack[1].value, MValue::Int(45));
                 assert_eq!(stack[1].instruction, Instruction::INIT);
                 assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
                 assert_eq!(stack[2].instruction, Instruction::INIT);
