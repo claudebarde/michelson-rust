@@ -41,6 +41,7 @@ Available instructions (implemented and tested):
 - [x] LEFT
 - [x] LEVEL
 - [x] LT
+- [x] MAP
 - [x] MEM
 - [x] MUL
 - [x] NEG
@@ -85,7 +86,6 @@ Available instructions (implemented and tested):
 - [ ] LOOP
 - [ ] LSL
 - [ ] LSR
-- [ ] MAP
 - [ ] OPEN_CHEST
 - [ ] PACK
 - [ ] PAIRING_CHECK
