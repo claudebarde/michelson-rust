@@ -301,4 +301,117 @@ mod test {
             }
         }
     }
+
+    #[test]
+    fn map_success_with_simple_map() {
+        let initial_map = MValue::new_map(
+            MType::String, 
+            MType::Nat, 
+            vec![
+                (MValue::String(String::from("tezos")), MValue::Nat(3)),
+                (MValue::String(String::from("taquito")), MValue::Nat(4)),
+                (MValue::String(String::from("tacos")), MValue::Nat(5)),
+                (MValue::String(String::from("cardano_lol")), MValue::Nat(6))
+            ]
+        );
+        let initial_stack: Stack = vec![
+            StackElement::new(initial_map, Instruction::INIT),
+            StackElement::new(MValue::Int(33), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        let args = vec![
+            json!([{ "prim": "CDR" }, { "prim": "PUSH", "args": [{"prim":"nat"}, {"int": "3"}] }, { "prim": "MUL" }])
+        ];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, Some(&args), &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                let output_map = MValue::new_map(
+                    MType::String, 
+                    MType::Nat, 
+                    vec![
+                        (MValue::String(String::from("tezos")), MValue::Nat(9)),
+                        (MValue::String(String::from("taquito")), MValue::Nat(12)),
+                        (MValue::String(String::from("tacos")), MValue::Nat(15)),
+                        (MValue::String(String::from("cardano_lol")), MValue::Nat(18))
+                    ]
+                );
+                assert!(stack.len() == 3);
+                assert_eq!(stack[0].value, output_map);
+                assert_eq!(stack[0].instruction, Instruction::MAP);
+                assert_eq!(stack[1].value, MValue::Int(33));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+                assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
+                assert_eq!(stack[2].instruction, Instruction::INIT);
+            }
+        }
+    }
+
+    #[test]
+    fn map_success_with_complex_map() {
+        let initial_map = MValue::new_map(
+            MType::String, 
+            MType::Pair(Box::new((MType::Int, MType::Int))), 
+            vec![
+                (MValue::String(String::from("tezos")), MValue::Pair(PairValue::new(MValue::Int(5), MValue::Int(6)))),
+                (MValue::String(String::from("taquito")), MValue::Pair(PairValue::new(MValue::Int(7), MValue::Int(8)))),
+                (MValue::String(String::from("tacos")), MValue::Pair(PairValue::new(MValue::Int(9), MValue::Int(10)))),
+                (MValue::String(String::from("cardano_lol")), MValue::Pair(PairValue::new(MValue::Int(11), MValue::Int(12))))
+            ]
+        );
+        let initial_stack: Stack = vec![
+            StackElement::new(initial_map, Instruction::INIT),
+            StackElement::new(MValue::Int(33), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        let args = vec![
+            json!([
+                { "prim": "CDR" }, 
+                { "prim": "UNPAIR" }, 
+                { "prim": "ADD" },
+                { "prim": "ABS" },
+                { "prim": "PUSH", "args": [{"prim":"string"}, {"string": "tillwebezos"}] },
+                { "prim": "PAIR" }
+            ])
+        ];
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, Some(&args), &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                let output_map = MValue::new_map(
+                    MType::String, 
+                    MType::Pair(Box::new((MType::String, MType::Nat))), 
+                    vec![
+                        (MValue::String(String::from("tezos")), MValue::Pair(PairValue::new(MValue::String(String::from("tillwebezos")), MValue::Nat(11)))),
+                        (MValue::String(String::from("taquito")), MValue::Pair(PairValue::new(MValue::String(String::from("tillwebezos")), MValue::Nat(15)))),
+                        (MValue::String(String::from("tacos")), MValue::Pair(PairValue::new(MValue::String(String::from("tillwebezos")), MValue::Nat(19)))),
+                        (MValue::String(String::from("cardano_lol")), MValue::Pair(PairValue::new(MValue::String(String::from("tillwebezos")), MValue::Nat(23))))
+                    ]
+                );
+                assert!(stack.len() == 3);
+                assert_eq!(stack[0].value, output_map);
+                assert_eq!(stack[0].instruction, Instruction::MAP);
+                assert_eq!(stack[1].value, MValue::Int(33));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+                assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
+                assert_eq!(stack[2].instruction, Instruction::INIT);
+            }
+        }
+    }
 }
