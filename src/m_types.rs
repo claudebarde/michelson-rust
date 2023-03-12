@@ -335,9 +335,24 @@ impl CollectionValue {
         }
     }
 
+    /// Removes an element from a collection value vector
+    pub fn remove(self, element: MValue) -> CollectionValue {
+        // checks if the element is in the collection
+        if self.value.contains(&element) {
+            let mut val = self.value.clone();
+            val.retain(|el| el != &element);
+            CollectionValue {
+                m_type: self.m_type,
+                value: val,
+            }
+        } else {
+            self
+        }
+    }
+
     /// Alias for `cons` to use with MValue of type set
     /// `.update` should be used with MValue of type list to match Michelson UPDATE
-    pub fn update(&mut self, element: MValue) -> CollectionValue {
+    pub fn update(&self, element: MValue) -> CollectionValue {
         self.cons(element)
     }
 

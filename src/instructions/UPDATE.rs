@@ -27,40 +27,37 @@ pub fn run(
                 (key, value, MValue::Big_map(big_map)) => todo!(),
                 (key, value, MValue::Map(map)) => todo!(),
                 (element, MValue::Bool(flag), MValue::Set(set)) => {
-                    if flag == true && set.value.contains(&element) {
-                        // the element is already in the set
-                        // updates the stack snapshots
-                        stack_snapshots.push(stack.clone());
-                        // returns the unchanged stack
-                        Ok((stack, stack_snapshots))
-                    } else if flag == true && !set.value.contains(&element) {
+                    let new_set = if element.get_type() == set.m_type {
                         // the set doesn't include the element
-                        // checks that the element is of the right type
-                        if element.get_type() == set.m_type {
+                        if flag && !set.value.contains(&element) {
                             // adds the element to the set
-                            let new_set = set.cons(element);
-                            // updates the stack
-                            let _ = stack
-                                .splice(
-                                    options.pos..(options.pos + 3),
-                                    vec![StackElement::new(MValue::Set(new_set), this_instruction)],
-                                )
-                                .collect::<Stack>();
-                            // updates the stack snapshots
-                            stack_snapshots.push(stack.clone());
-                            // returns the unchanged stack
-                            Ok((stack, stack_snapshots))
+                            Ok(set.update(element))
+                        } else if !flag && set.value.contains(&element) {
+                            // removes the element from the set
+                            Ok(set.remove(element))
                         } else {
-                            Err(format!(
-                                "Invalid type for instruction `{:?}` expected {} to update the set, but got {}",
-                                this_instruction,
-                                set.m_type.to_string(),
-                                element.get_type().to_string()
-                            ))
+                            // nothing happens
+                            Ok(set)
                         }
                     } else {
-                        Ok((stack, stack_snapshots))
-                    }
+                        Err(format!(
+                                    "Invalid type for instruction `{:?}` expected {} to update the set, but got {}",
+                                    this_instruction,
+                                    set.m_type.to_string(),
+                                    element.get_type().to_string()
+                                ))
+                    }?;
+                    // updates the stack
+                    let _ = stack
+                        .splice(
+                            options.pos..(options.pos + 3),
+                            vec![StackElement::new(MValue::Set(new_set), this_instruction)],
+                        )
+                        .collect::<Stack>();
+                    // updates the stack snapshots
+                    stack_snapshots.push(stack.clone());
+                    // returns the unchanged stack
+                    Ok((stack, stack_snapshots))
                 }
                 _ => Err(format!(
                     "Invalid stack for instruction UPDATE => 0- {} / 1- {} / 2- {}",
@@ -83,7 +80,7 @@ mod test {
     use crate::instructions::RunOptionsContext;
 
     #[test]
-    fn update_success_with_simple_set() {
+    fn update_success_add_simple_set() {
         let initial_set = MValue::new_set(
             vec![
                 MValue::Nat(2),
@@ -117,6 +114,154 @@ mod test {
                     MValue::new_set(
                         vec![
                             MValue::Nat(9),
+                            MValue::Nat(2),
+                            MValue::Nat(3),
+                            MValue::Nat(4),
+                            MValue::Nat(5)
+                        ],
+                        MType::Nat
+                    )
+                );
+                assert_eq!(stack[0].instruction, Instruction::UPDATE);
+                assert_eq!(stack[1].value, MValue::Int(22));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+                assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
+                assert_eq!(stack[2].instruction, Instruction::INIT);
+            }
+        }
+    }
+
+    #[test]
+    fn update_success_add_simple_set_no_change() {
+        let initial_set = MValue::new_set(
+            vec![
+                MValue::Nat(2),
+                MValue::Nat(3),
+                MValue::Nat(4),
+                MValue::Nat(5),
+            ],
+            MType::Nat,
+        );
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Nat(4), Instruction::INIT),
+            StackElement::new(MValue::Bool(true), Instruction::INIT),
+            StackElement::new(initial_set, Instruction::INIT),
+            StackElement::new(MValue::Int(22), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 5);
+
+        match run(initial_stack, None, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 3);
+                assert_eq!(
+                    stack[0].value,
+                    MValue::new_set(
+                        vec![
+                            MValue::Nat(2),
+                            MValue::Nat(3),
+                            MValue::Nat(4),
+                            MValue::Nat(5)
+                        ],
+                        MType::Nat
+                    )
+                );
+                assert_eq!(stack[0].instruction, Instruction::UPDATE);
+                assert_eq!(stack[1].value, MValue::Int(22));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+                assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
+                assert_eq!(stack[2].instruction, Instruction::INIT);
+            }
+        }
+    }
+
+    #[test]
+    fn update_success_remove_simple_set() {
+        let initial_set = MValue::new_set(
+            vec![
+                MValue::Nat(2),
+                MValue::Nat(3),
+                MValue::Nat(4),
+                MValue::Nat(5),
+            ],
+            MType::Nat,
+        );
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Nat(3), Instruction::INIT),
+            StackElement::new(MValue::Bool(false), Instruction::INIT),
+            StackElement::new(initial_set, Instruction::INIT),
+            StackElement::new(MValue::Int(22), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 5);
+
+        match run(initial_stack, None, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 3);
+                assert_eq!(
+                    stack[0].value,
+                    MValue::new_set(
+                        vec![MValue::Nat(2), MValue::Nat(4), MValue::Nat(5)],
+                        MType::Nat
+                    )
+                );
+                assert_eq!(stack[0].instruction, Instruction::UPDATE);
+                assert_eq!(stack[1].value, MValue::Int(22));
+                assert_eq!(stack[1].instruction, Instruction::INIT);
+                assert_eq!(stack[2].value, MValue::Mutez(6_000_000));
+                assert_eq!(stack[2].instruction, Instruction::INIT);
+            }
+        }
+    }
+
+    #[test]
+    fn update_success_remove_simple_set_no_change() {
+        let initial_set = MValue::new_set(
+            vec![
+                MValue::Nat(2),
+                MValue::Nat(3),
+                MValue::Nat(4),
+                MValue::Nat(5),
+            ],
+            MType::Nat,
+        );
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Nat(9), Instruction::INIT),
+            StackElement::new(MValue::Bool(false), Instruction::INIT),
+            StackElement::new(initial_set, Instruction::INIT),
+            StackElement::new(MValue::Int(22), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 5);
+
+        match run(initial_stack, None, &options, stack_snapshots) {
+            Err(_) => assert!(false),
+            Ok((stack, _)) => {
+                assert!(stack.len() == 3);
+                assert_eq!(
+                    stack[0].value,
+                    MValue::new_set(
+                        vec![
                             MValue::Nat(2),
                             MValue::Nat(3),
                             MValue::Nat(4),
