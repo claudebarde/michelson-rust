@@ -22,17 +22,23 @@ pub enum AddressType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ticket {
-    amount: nat,
-    value: MValue,
-    ticketer: address,
+    pub value: MValue,
+    pub amount: nat,
+    pub ticketer: address,
 }
 
 impl Ticket {
-    pub fn new(amount: nat, value: MValue, ticketer: address) -> Ticket {
-        Ticket {
-            amount,
-            value,
-            ticketer,
+    pub fn new(value: MValue, amount: nat, ticketer: address) -> Result<Ticket, String> {
+        if amount > 0 {
+            Ok(Ticket {
+                amount,
+                value,
+                ticketer,
+            })
+        } else {
+            Err(String::from(
+                "Amount for a new ticket must be greater than zero",
+            ))
         }
     }
 }
@@ -60,6 +66,7 @@ pub type list<T> = Vec<T>;
 pub type set<T> = Vec<T>;
 pub type map<K, V> = HashMap<K, V>;
 pub type big_map<K, V> = HashMap<K, V>;
+pub type ticket<A> = (A, nat, address);
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum MType {
@@ -78,7 +85,7 @@ pub enum MType {
     Timestamp,
     Address,
     Operation,
-    Ticket,
+    Ticket(Box<(MType, MType, MType)>),
     Contract(Box<(MType, MType)>),
     Option(Box<MType>),
     Or(Box<(MType, MType)>),
@@ -107,7 +114,6 @@ impl MType {
             "timestamp" => Ok(MType::Timestamp),
             "address" => Ok(MType::Address),
             "operation" => Ok(MType::Operation),
-            "ticket" => Ok(MType::Ticket),
             _ => Err(String::from(format!("Unknown type '{}'", str))),
         }
     }
@@ -129,7 +135,7 @@ impl MType {
             MType::Timestamp => String::from("timestamp"),
             MType::Address => String::from("address"),
             MType::Operation => String::from("operation"),
-            MType::Ticket => String::from("ticket"),
+            MType::Ticket(_) => String::from("ticket"),
             MType::Contract(_) => String::from("contract"),
             MType::Option(_) => String::from("option"),
             MType::Or(_) => String::from("or"),
@@ -496,7 +502,9 @@ impl MValue {
             MValue::Timestamp(_) => MType::Timestamp,
             MValue::Address(_) => MType::Address,
             MValue::Operation(_) => MType::Operation,
-            MValue::Ticket(_) => MType::Ticket,
+            MValue::Ticket(val) => {
+                MType::Ticket(Box::new((val.value.get_type(), MType::Nat, MType::Address)))
+            }
             MValue::Contract(val) => {
                 MType::Contract(Box::new((MType::Address, val.parameter.clone())))
             }
@@ -736,6 +744,14 @@ impl MValue {
     /// creates a new bytes value
     pub fn new_bytes(val: &str) -> MValue {
         MValue::Bytes(val.to_string())
+    }
+
+    /// creates a new ticket value
+    pub fn new_ticket(value: MValue, amount: nat, ticketer: address) -> Result<MValue, String> {
+        match Ticket::new(value, amount, ticketer) {
+            Err(err) => Err(err),
+            Ok(ticket) => Ok(MValue::Ticket(Box::new(ticket))),
+        }
     }
 }
 

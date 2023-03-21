@@ -204,29 +204,27 @@ mod tests {
     #[should_panic(expected = "Tickets cannot be duplicated")]
     fn dup_ticket() {
         let args: Option<&Vec<Value>> = None;
-        let initial_stack: Stack = vec![
-            StackElement::new(
-                MValue::Ticket(Box::new(Ticket::new(
-                    5,
-                    MValue::Int(5),
-                    String::from("test_address"),
-                ))),
-                Instruction::INIT,
-            ),
-            StackElement::new(MValue::Int(5), Instruction::INIT),
-            StackElement::new(MValue::Nat(6), Instruction::INIT),
-        ];
-        let stack_snapshots = vec![];
-        let options = RunOptions {
-            context: RunOptionsContext::mock(),
-            pos: 0,
-        };
+        match Ticket::new(MValue::Int(5), 5, String::from("test_address")) {
+            Err(_) => panic!("Unable to create a new ticket"),
+            Ok(ticket) => {
+                let initial_stack: Stack = vec![
+                    StackElement::new(MValue::Ticket(Box::new(ticket)), Instruction::INIT),
+                    StackElement::new(MValue::Int(5), Instruction::INIT),
+                    StackElement::new(MValue::Nat(6), Instruction::INIT),
+                ];
+                let stack_snapshots = vec![];
+                let options = RunOptions {
+                    context: RunOptionsContext::mock(),
+                    pos: 0,
+                };
 
-        assert!(initial_stack.len() == 3);
+                assert!(initial_stack.len() == 3);
 
-        match run(initial_stack, args, &options, stack_snapshots) {
-            Ok(_) => assert!(false),
-            Err(err) => panic!("{}", err),
+                match run(initial_stack, args, &options, stack_snapshots) {
+                    Ok(_) => assert!(false),
+                    Err(err) => panic!("{}", err),
+                }
+            }
         }
     }
 }

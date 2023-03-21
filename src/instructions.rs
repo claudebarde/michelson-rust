@@ -55,6 +55,7 @@ mod SOME;
 mod SOURCE;
 mod SUB;
 mod SWAP;
+mod TICKET;
 mod UNIT;
 mod UNPAIR;
 mod UPDATE;
@@ -118,6 +119,7 @@ pub enum Instruction {
     SOURCE,
     SUB,
     SWAP,
+    TICKET,
     UNIT,
     UNPAIR,
     UPDATE,
@@ -229,6 +231,7 @@ impl Instruction {
             "SUB" => Ok(Instruction::SUB),
             "SWAP" => Ok(Instruction::SWAP),
             "UNIT" => Ok(Instruction::UNIT),
+            "TICKET" => Ok(Instruction::TICKET),
             "UNPAIR" => Ok(Instruction::UNPAIR),
             "UPDATE" => Ok(Instruction::UPDATE),
             "XOR" => Ok(Instruction::XOR),
@@ -415,6 +418,7 @@ impl Instruction {
             Instruction::SOURCE => SOURCE::run(initial_stack, options, stack_snapshots),
             Instruction::SUB => SUB::run(initial_stack, options, stack_snapshots),
             Instruction::SWAP => SWAP::run(initial_stack, options, stack_snapshots),
+            Instruction::TICKET => TICKET::run(initial_stack, options, stack_snapshots),
             Instruction::UNIT => UNIT::run(initial_stack, options, stack_snapshots),
             Instruction::UNPAIR => UNPAIR::run(initial_stack, options, stack_snapshots),
             Instruction::UPDATE => UPDATE::run(initial_stack, args, options, stack_snapshots),
