@@ -54,6 +54,7 @@ mod SLICE;
 mod SOME;
 mod SOURCE;
 mod SUB;
+mod SUB_MUTEZ;
 mod SWAP;
 mod TICKET;
 mod UNIT;
@@ -118,6 +119,7 @@ pub enum Instruction {
     SOME,
     SOURCE,
     SUB,
+    SUB_MUTEZ,
     SWAP,
     TICKET,
     UNIT,
@@ -229,6 +231,7 @@ impl Instruction {
             "SOME" => Ok(Instruction::SOME),
             "SOURCE" => Ok(Instruction::SOURCE),
             "SUB" => Ok(Instruction::SUB),
+            "SUB_MUTEZ" => Ok(Instruction::SUB_MUTEZ),
             "SWAP" => Ok(Instruction::SWAP),
             "UNIT" => Ok(Instruction::UNIT),
             "TICKET" => Ok(Instruction::TICKET),
@@ -417,6 +420,7 @@ impl Instruction {
             Instruction::SOME => SOME::run(initial_stack, options, stack_snapshots),
             Instruction::SOURCE => SOURCE::run(initial_stack, options, stack_snapshots),
             Instruction::SUB => SUB::run(initial_stack, options, stack_snapshots),
+            Instruction::SUB_MUTEZ => SUB_MUTEZ::run(initial_stack, options, stack_snapshots),
             Instruction::SWAP => SWAP::run(initial_stack, options, stack_snapshots),
             Instruction::TICKET => TICKET::run(initial_stack, options, stack_snapshots),
             Instruction::UNIT => UNIT::run(initial_stack, options, stack_snapshots),

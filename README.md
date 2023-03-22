@@ -63,6 +63,7 @@ Available instructions (implemented and tested):
 - [x] SOURCE
 - [x] SUB
 - [x] SWAP
+- [x] TICKET
 - [x] UNIT
 - [x] UNPAIR
 - [x] XOR
@@ -99,14 +100,14 @@ Available instructions (implemented and tested):
 - [ ] SHA256
 - [ ] SHA512
 - [ ] SPLIT_TICKET
-- [ ] TICKET
+- [ ] SUB_MUTEZ
 - [ ] TOTAL_VOTING_POWER
 - [ ] TRANSFER_TOKENS
 - [ ] UNPACK
 - [ ] UPDATE
 - [ ] VOTING_POWER
 
-(57 instructions / 95)
+(59 instructions / 96)
 
 ## How to run the tests for `utils`?
 
