@@ -46,9 +46,166 @@ pub fn run(
     }?;
 
     let (_, new_stack) = stack.remove_at(options.pos);
-    let new_stack = new_stack.insert_at(vec![new_stack_el], options.pos);
+    let new_stack = new_stack.replace(vec![new_stack_el], options.pos);
     // updates the stack snapshots
     stack_snapshots.push(new_stack.clone());
 
     Ok((new_stack, stack_snapshots))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::instructions::RunOptionsContext;
+
+    // PASSING
+    #[test]
+    fn sub_mutez_success_some() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Mutez(15), Instruction::INIT),
+            StackElement::new(MValue::Mutez(6), Instruction::INIT),
+            StackElement::new(MValue::Int(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Ok((new_stack, _)) => {
+                assert!(new_stack.len() == 2);
+                assert!(
+                    new_stack[0].value
+                        == MValue::Option(OptionValue::new(Some(MValue::Mutez(9)), MType::Mutez))
+                );
+                assert!(new_stack[0].instruction == Instruction::SUB_MUTEZ);
+                assert!(new_stack[1].value == MValue::Int(6_000_000));
+                assert!(new_stack[1].instruction == Instruction::INIT)
+            }
+            Err(_) => assert!(false),
+        }
+    }
+
+    #[test]
+    fn sub_mutez_success_none() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Mutez(5), Instruction::INIT),
+            StackElement::new(MValue::Mutez(16), Instruction::INIT),
+            StackElement::new(MValue::Int(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Ok((new_stack, _)) => {
+                assert!(new_stack.len() == 2);
+                assert!(new_stack[0].value == MValue::Option(OptionValue::new(None, MType::Mutez)));
+                assert!(new_stack[0].instruction == Instruction::SUB_MUTEZ);
+                assert!(new_stack[1].value == MValue::Int(6_000_000));
+                assert!(new_stack[1].instruction == Instruction::INIT)
+            }
+            Err(_) => assert!(false),
+        }
+    }
+
+    // FAILING
+    #[test]
+    fn sub_mutez_fail_1() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Mutez(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(16), Instruction::INIT),
+            StackElement::new(MValue::Int(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => assert!(
+                err == String::from(
+                    "Wrong type, expected `mutez` for instruction SUB_MUTEZ, got `nat`"
+                )
+            ),
+        }
+    }
+
+    #[test]
+    fn sub_mutez_fail_2() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Mutez(16), Instruction::INIT),
+            StackElement::new(MValue::Int(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => assert!(
+                err == String::from(
+                    "Wrong type, expected `mutez` for instruction SUB_MUTEZ, got `int`"
+                )
+            ),
+        }
+    }
+
+    #[test]
+    fn sub_mutez_fail_3() {
+        let initial_stack: Stack = vec![
+            StackElement::new(MValue::Int(5), Instruction::INIT),
+            StackElement::new(MValue::Nat(16), Instruction::INIT),
+            StackElement::new(MValue::Int(6_000_000), Instruction::INIT),
+        ];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 3);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => assert!(
+                err == String::from("SUB_MUTEZ instruction requires 2 mutez values on the stack")
+            ),
+        }
+    }
+
+    #[test]
+    fn sub_mutez_fail_4() {
+        let initial_stack: Stack = vec![StackElement::new(MValue::Int(5), Instruction::INIT)];
+        let stack_snapshots = vec![];
+        let options = RunOptions {
+            context: RunOptionsContext::mock(),
+            pos: 0,
+        };
+
+        assert!(initial_stack.len() == 1);
+
+        match run(initial_stack, &options, stack_snapshots) {
+            Ok(_) => assert!(false),
+            Err(err) => assert!(
+                err == String::from("Unexpected stack length, expected a length of 2 for instruction SUB_MUTEZ, got 1")
+            ),
+        }
+    }
 }

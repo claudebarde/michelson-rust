@@ -65,8 +65,21 @@ Available instructions (implemented and tested):
 - [x] SWAP
 - [x] TICKET
 - [x] UNIT
+- [x] UPDATE
 - [x] UNPAIR
 - [x] XOR
+
+To be done next:
+
+- [ ] DIP
+- [ ] IF_CONS
+- [ ] IF_NONE
+- [ ] IFCMP\*
+- [ ] ITER
+- [ ] IMPLICIT_ACCOUNT
+- [ ] SELF
+
+To be done:
 
 - [ ] APPLY
 - [ ] BLAKE2B
@@ -74,14 +87,8 @@ Available instructions (implemented and tested):
 - [ ] CHECK_SIGNATURE
 - [ ] CONTRACT
 - [ ] CREATE_CONTRACT
-- [ ] DIP
 - [ ] EXEC
 - [ ] HASH_KEY
-- [ ] IF_CONS
-- [ ] IF_NONE
-- [ ] IFCMP\*
-- [ ] IMPLICIT_ACCOUNT
-- [ ] ITER
 - [ ] JOIN_TICKETS
 - [ ] LAMBDA
 - [ ] LOOP
@@ -94,7 +101,6 @@ Available instructions (implemented and tested):
 - [ ] RENAME
 - [ ] SAPLING_EMPTY_STATE
 - [ ] SAPLING_VERIFY_UPDATE
-- [ ] SELF
 - [ ] SET_DELEGATE
 - [ ] SHA3
 - [ ] SHA256
@@ -104,10 +110,9 @@ Available instructions (implemented and tested):
 - [ ] TOTAL_VOTING_POWER
 - [ ] TRANSFER_TOKENS
 - [ ] UNPACK
-- [ ] UPDATE
 - [ ] VOTING_POWER
 
-(59 instructions / 96)
+(60 instructions / 96)
 
 ## How to run the tests for `utils`?
 
